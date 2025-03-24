@@ -9,12 +9,9 @@ import (
 	"worker/dbRedis"
 )
 
-var (
-	redisClient               = dbRedis.Get()
-	cfg         config.Config = *config.Get()
-)
-
 func GetUserQueuedTasks() (*[]Cron, error) {
+	redisClient := dbRedis.Get()
+	cfg := *config.Get()
 	ctx := context.Background()
 	results, err := redisClient.HGetAll(ctx, cfg.UserQueue).Result()
 	if err != nil {

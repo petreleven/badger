@@ -3,6 +3,8 @@ package cronlisting
 import (
 	"encoding/json"
 	"fmt"
+
+	"worker/config"
 )
 
 type Cron struct {
@@ -22,6 +24,7 @@ func (c *Cron) Encode() string {
 }
 
 func (c *Cron) DecodeFromSlice(cronName string, cronDetails []string) error {
+	cfg := *config.Get()
 	if len(cronDetails) < 5 {
 		return fmt.Errorf("Cron details len doesnt match expected length\n")
 	}

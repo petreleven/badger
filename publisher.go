@@ -16,7 +16,7 @@ var (
 	cfg2        *config.Config = config.Get()
 )
 
-func main() {
+func main2() {
 	c2 := listing.Cron{
 		Name:    "task1",
 		Minute:  "*/5",

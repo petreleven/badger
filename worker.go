@@ -6,6 +6,7 @@ import (
 	"os"
 
 	cronsched "worker/cronSched"
+	db "worker/dbRedis"
 	hb "worker/heartbeat"
 
 	"github.com/sevlyar/go-daemon"
@@ -13,17 +14,26 @@ import (
 	config "worker/config"
 )
 
-var cfg *config.Config = config.Get()
+var (
+	cfg *config.Config
+	d   = flag.Int("d",
+		0,
+		"run as daemon, 0 by default , 1 to run as daemon")
+	u    = flag.String("u", "redis://localhost:6739", "redis url")
+	name = flag.String("name", "worker1", "name of worker")
+)
 
-func main2() {
+func main() {
 	flag.Parse()
+	db.RedisUrl = u
+	cfg = config.Get()
 
 	if len(os.Args) > 1 {
-		cfg.PidFileName = os.Args[1] + ".pid"
-		cfg.LogFileName = os.Args[1] + ".log"
-		cfg.WorkerProcName = os.Args[1]
+		cfg.PidFileName = *name + ".pid"
+		cfg.LogFileName = *name + ".log"
+		cfg.WorkerProcName = *name
 	}
-	if true {
+	if *d == 1 {
 		cntxt := &daemon.Context{
 			PidFileName: cfg.PidFileName,
 			PidFilePerm: 0o644,

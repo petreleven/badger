@@ -15,11 +15,14 @@ import (
 )
 
 var (
-	redisClient *redis.Client  = dbRedis.Get()
-	cfg         *config.Config = config.Get()
+	redisClient *redis.Client
+	cfg         *config.Config
 )
 
 func AddPendingCronsStart() {
+	redisClient = dbRedis.Get()
+	cfg = config.Get()
+
 	addPendingCrons()
 	go func() {
 		for {
@@ -64,7 +67,6 @@ func addPendingCrons() error {
 		log.Printf("ERROR TRYING TO TAKE CHARGE OF addpendingMasterKey:%v\n", err)
 		return err
 	}
-	log.Println("t is:", time.Now())
 	value, err = getCmd.Result()
 	if err != nil {
 		log.Printf("ERROR TRYING TO GET addpendingMasterKey%v\n", err)

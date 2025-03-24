@@ -10,14 +10,18 @@ import (
 
 	"worker/config"
 	"worker/dbRedis"
+
+	"github.com/redis/go-redis/v9"
 )
 
 var (
-	redisClient                = dbRedis.Get()
-	cfg         *config.Config = config.Get()
+	redisClient *redis.Client
+	cfg         *config.Config
 )
 
 func HearBeatStart() {
+	redisClient = dbRedis.Get()
+	cfg = config.Get()
 	hearBeat()
 	go func() {
 		for {

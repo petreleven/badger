@@ -10,7 +10,7 @@ import (
 
 var (
 	redisClient *redis.Client
-	redisUrl    = "redis://default:tHLiybzosQxiLUFqvyhLOvOQPZSyKhRL@switchback.proxy.rlwy.net:50554"
+	RedisUrl    *string
 )
 
 func Get() *redis.Client {
@@ -21,28 +21,30 @@ func Get() *redis.Client {
 }
 
 func connectAndSave() *redis.Client {
-	options, err := redis.ParseURL(redisUrl)
-	options.MaxRetries = 5
-	options.DialTimeout = 5 * time.Second
+	op, err := redis.ParseURL(*RedisUrl)
+	if err != nil {
+		log.Panicln("ERROR parsing redis url")
+	}
+	options := &redis.Options{
+		Addr:             op.Addr,
+		Password:         op.Password,
+		DB:               1,
+		DisableIndentity: true,
+		MaxRetries:       10,
+		PoolSize:         2,
+		DialTimeout:      5 * time.Second,
+		ReadTimeout:      10 * time.Second,
+		WriteTimeout:     5 * time.Second,
+		PoolTimeout:      1 * time.Second,
+	}
+
 	if err != nil {
 		log.Println("Cant parse url")
 		return nil
 	}
 	redisClient = redis.NewClient(options)
 	/*
-		&redis.Options{
-				Addr:             redisUrl,
-				Password:         "",
-				DB:               1,
-				DisableIndentity: true,
-				MaxRetries:       10,
-				PoolSize:         2,
-				DialTimeout:      5 * time.Second,
-				ReadTimeout:      10 * time.Second,
-				WriteTimeout:     5 * time.Second,
-				PoolTimeout:      1 * time.Second,
-			}
-	*/
+	 */
 	err = redisClient.Ping(context.Background()).Err()
 	if err != nil {
 		log.Fatalln("Failed to connect to redis: ", err)
