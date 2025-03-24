@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -28,8 +29,8 @@ func AddPendingCronsStart() {
 	}()
 }
 
+// Assuming a cluster of workers , try to take charge of adding cron jobs to queue
 func addPendingCrons() error {
-	// Assuming a cluster of workers , try to take charge of adding cron jobs to queue
 	ctx := context.Background()
 	var (
 		addpendingMasterKey = cfg.AddPendingMasterKey
@@ -41,7 +42,14 @@ func addPendingCrons() error {
 		setCmd *redis.BoolCmd
 		getCmd *redis.StringCmd
 	)
-	_, err := redisClient.Pipelined(context.Background(), func(pipeline redis.Pipeliner) error {
+
+	// try to take charge
+	// first make sure the key doesnt exist
+	_, err := redisClient.Get(ctx, addpendingMasterKey).Result()
+	if err != redis.Nil {
+		return err
+	}
+	_, err = redisClient.Pipelined(context.Background(), func(pipeline redis.Pipeliner) error {
 		setCmd = pipeline.SetNX(ctx, addpendingMasterKey, cfg.WorkerProcName, cronMasterTTL)
 		getCmd = pipeline.Get(ctx, addpendingMasterKey)
 		return nil
@@ -56,6 +64,7 @@ func addPendingCrons() error {
 		log.Printf("ERROR TRYING TO TAKE CHARGE OF addpendingMasterKey:%v\n", err)
 		return err
 	}
+	log.Println("t is:", time.Now())
 	value, err = getCmd.Result()
 	if err != nil {
 		log.Printf("ERROR TRYING TO GET addpendingMasterKey%v\n", err)
@@ -64,7 +73,7 @@ func addPendingCrons() error {
 
 	// Check if we took role of cron scheduling
 	if value != cfg.WorkerProcName {
-		log.Println("Cant take role of cronmaster")
+		// log.Println("Cant take role of cronmaster")
 		return nil
 	}
 	// TODO push jobs to pending queue
@@ -72,13 +81,13 @@ func addPendingCrons() error {
 	if err != nil {
 		end = time.Now()
 	}
-	end = ZeroOutSecondAndNanoSecon(end)
+	end = ZeroOutSecondAndNanoSecond(end)
 	startStr, err := redisClient.Get(ctx, addPendingLastUnix).Result()
 	var startInt int64
 	if err == redis.Nil {
 		startInt = end.Unix()
 	} else if err != nil {
-		log.Printf("failed to get addPendingLastUnix: %v\n", err)
+		log.Printf("Failed to get addPendingLastUnix: %v\n", err)
 		return err
 	} else {
 		startInt, err = strconv.ParseInt(startStr, 10, 64)
@@ -88,35 +97,98 @@ func addPendingCrons() error {
 		}
 	}
 	start := time.Unix(startInt, 0)
-	start = ZeroOutSecondAndNanoSecon(start)
+	start = ZeroOutSecondAndNanoSecond(start)
 	if end.Sub(start) > 24*time.Hour || start.After(end) {
 		start = end
 	}
 
 	userlisting, err := cronlisting.GetUserQueuedTasks()
-	if userlisting == nil {
+	if userlisting == nil || err != nil {
 		return err
 	}
 	_, err = redisClient.Pipelined(ctx, func(pipeline redis.Pipeliner) error {
-		// TODO- add jobs to pending queue if their schedtime minute is between start -> end
 		for _, cron := range *userlisting {
-			data := cron.Json()
-			pipeline.LPush(ctx, cron.Queue, string(data))
+			t := start
+			for t.Compare(end) <= 0 {
+				status, err := IsCronReady(&cron, t)
+				if err != nil {
+					log.Println("Error checking if cron:", cron.Name, " ISready ", err)
+					break
+				}
+				if status {
+					jb := cron.Json()
+					pipeline.LPush(ctx, cron.Queue, cron.Name+":"+string(jb))
+					break
+				}
+				t = t.Add(1 * time.Minute)
+			}
+
 		}
 		return nil
 	})
 
-	nextEnd := end.Add(time.Minute)
-	_, err = redisClient.Pipelined(ctx, func(pipeline redis.Pipeliner) error {
-		pipeline.Set(ctx, addPendingLastUnix, strconv.FormatInt(nextEnd.Unix(), 10), 0)
-		return nil
-	})
+	nextEnd := end.Add(1 * time.Minute)
+	_, err = redisClient.Set(ctx, addPendingLastUnix, strconv.FormatInt(nextEnd.Unix(), 10), -1).Result()
+
 	if err != nil {
 		log.Println("ERROR SETTING addpendingLastUnix ", err)
 	}
+	// redisClient.Del(ctx, addpendingMasterKey).Result()
 	return nil
 }
 
-func ZeroOutSecondAndNanoSecon(t time.Time) time.Time {
+func ZeroOutSecondAndNanoSecond(t time.Time) time.Time {
 	return t.Truncate(time.Minute)
+}
+
+func isInRange(value string, t int) (bool, error) {
+	if value == "*" {
+		return true, nil
+	}
+
+	if strings.HasPrefix(value, "*/") {
+		if len(value) > 2 {
+			divisor, err := strconv.Atoi(value[2:])
+			if err != nil {
+				return false, err
+			}
+			if t%divisor == 0 {
+				return true, nil
+			}
+		}
+		return false, nil
+	}
+	v, err := strconv.Atoi(value)
+	if err != nil {
+		return false, err
+	}
+	if v == t {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func IsCronReady(c *cronlisting.Cron, t time.Time) (bool, error) {
+	ready, err := isInRange(c.DayWeek, int(t.Weekday()))
+	if err != nil || !ready {
+		return false, err
+	}
+	ready, err = isInRange(c.Month, int(t.Month()))
+	if err != nil || !ready {
+		return false, err
+	}
+	ready, err = isInRange(c.Day, t.Day())
+	if err != nil || !ready {
+		return false, err
+	}
+	ready, err = isInRange(c.Hour, t.Hour())
+	if err != nil || !ready {
+		return false, err
+	}
+	ready, err = isInRange(c.Minute, t.Minute())
+	if err != nil || !ready {
+		return false, err
+	}
+	return true, nil
 }

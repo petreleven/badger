@@ -13,15 +13,16 @@ import (
 	config "worker/config"
 )
 
-var (
-	cfg              *config.Config = config.Get()
-	procName         *string        = flag.String("n", "", "The worker name")
-	g_workerProcName string
-)
+var cfg *config.Config = config.Get()
 
-func main() {
+func main2() {
 	flag.Parse()
 
+	if len(os.Args) > 1 {
+		cfg.PidFileName = os.Args[1] + ".pid"
+		cfg.LogFileName = os.Args[1] + ".log"
+		cfg.WorkerProcName = os.Args[1]
+	}
 	if true {
 		cntxt := &daemon.Context{
 			PidFileName: cfg.PidFileName,
