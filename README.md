@@ -1,7 +1,3 @@
-Here's an improved version of your README with better structure, formatting, and clarity.
-
----
-
 # badgetWorker
 
 A cron worker implementation in Go that utilizes Redis as a data queue and for distributed locking. This project is heavily inspired by [brooce](https://github.com/SergeyTsalkov/brooce).
