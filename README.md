@@ -58,6 +58,3 @@ To run in daemon mode:
 
 [MIT License](LICENSE)
 
----
-
-This version improves readability, adds proper formatting, and makes it easier for users to understand how to use the worker. Let me know if you want any specific additions! 🚀
