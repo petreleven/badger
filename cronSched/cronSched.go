@@ -119,7 +119,7 @@ func addPendingCrons() error {
 				}
 				if status {
 					jb := cron.Json()
-					pipeline.LPush(ctx, cron.Queue, cron.Name+":"+string(jb))
+					pipeline.LPush(ctx, cfg.PendingQueue, cron.Name+":"+string(jb))
 					break
 				}
 				t = t.Add(1 * time.Minute)

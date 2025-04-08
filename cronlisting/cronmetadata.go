@@ -3,6 +3,9 @@ package cronlisting
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"strconv"
+	"time"
 
 	"worker/config"
 )
@@ -47,4 +50,59 @@ func (c *Cron) Json() (data []byte) {
 		return nil
 	}
 	return data
+}
+
+func (c *Cron) GetUTC() (int64, error) {
+	dayofweek, err := strconv.Atoi(c.DayWeek)
+	if err != nil {
+		log.Println("Unable to convert weekday to int for cron:", c.Name, err)
+		return -1, err
+	}
+	dayofweekstr := ""
+	switch dayofweek {
+	case 0:
+		dayofweekstr = "Sunday"
+
+	case 1:
+		dayofweekstr = "Monday"
+
+	case 2:
+		dayofweekstr = "Tuesday"
+
+	case 3:
+		dayofweekstr = "Wednesday"
+
+	case 4:
+		dayofweekstr = "Thursday"
+
+	case 5:
+		dayofweekstr = "Friday"
+
+	case 6:
+		dayofweekstr = "Saturday"
+
+	}
+	layout := "2006-01-02 Monday 15:04"
+	if len(c.Month) != 2 {
+		c.Month = "0" + c.Month
+	}
+	if len(c.Day) != 2 {
+		c.Day = "0" + c.Month
+	}
+	if len(c.Hour) != 2 {
+		c.Hour = "0" + c.Hour
+	}
+	if len(c.Minute) != 2 {
+		c.Minute = "0" + c.Minute
+	}
+
+	value := fmt.Sprintf("%d", time.Now().UTC().Year()) + "-" + c.Month + "-" + c.Day +
+		" " + dayofweekstr + " " +
+		c.Hour + ":" + c.Minute
+	t, err := time.Parse(layout, value)
+	if err != nil {
+		log.Println("Unable to convert cron data to valid time for c:", c.Name, err)
+		return -1, err
+	}
+	return t.Unix(), nil
 }

@@ -8,6 +8,7 @@ import (
 	cronsched "worker/cronSched"
 	db "worker/dbRedis"
 	hb "worker/heartbeat"
+	"worker/prune"
 
 	"github.com/sevlyar/go-daemon"
 
@@ -23,8 +24,9 @@ var (
 	name = flag.String("name", "worker1", "name of worker")
 )
 
-func main() {
+func main2() {
 	flag.Parse()
+
 	db.RedisUrl = u
 	cfg = config.Get()
 
@@ -59,5 +61,6 @@ func main() {
 	var forever chan string
 	hb.HearBeatStart()
 	cronsched.AddPendingCronsStart()
+	prune.PruneStart()
 	<-forever
 }
