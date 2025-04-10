@@ -49,11 +49,11 @@ func main() {
 	ctx := context.Background()
 	c1 := listing.Cron{
 		Name:    "start",
-		Minute:  "33",
-		Hour:    "11",
-		Day:     "09",
-		Month:   "04",
-		DayWeek: "2",
+		Minute:  "18",
+		Hour:    "19",
+		Day:     "*",
+		Month:   "*",
+		DayWeek: "*",
 		Job:     "run bash",
 		Queue:   "userqueue",
 	}

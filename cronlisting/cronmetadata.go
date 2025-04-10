@@ -10,6 +10,14 @@ import (
 	"worker/config"
 )
 
+const (
+	MINUTE = iota
+	HOUR
+	DAY
+	MONTH
+	DAYWEEK
+)
+
 type Cron struct {
 	Name string
 
@@ -52,12 +60,38 @@ func (c *Cron) Json() (data []byte) {
 	return data
 }
 
+func parseCronRepeatField(field *string, level int) {
+	if *field != "*" {
+		return
+	}
+
+	switch level {
+	case MINUTE:
+		*field = fmt.Sprintf("%d", time.Now().Minute())
+	case HOUR:
+		*field = fmt.Sprintf("%d", time.Now().Hour())
+	case DAY:
+		*field = fmt.Sprintf("%d", time.Now().Day())
+	case MONTH:
+		*field = fmt.Sprintf("%d", time.Now().Month())
+	case DAYWEEK:
+		*field = fmt.Sprintf("%d", time.Now().Weekday())
+	}
+}
+
 func (c *Cron) GetUTC() (int64, error) {
+	parseCronRepeatField(&c.Minute, MINUTE)
+	parseCronRepeatField(&c.Hour, HOUR)
+	parseCronRepeatField(&c.Day, DAY)
+	parseCronRepeatField(&c.Month, MONTH)
+	parseCronRepeatField(&c.DayWeek, DAYWEEK)
+
 	dayofweek, err := strconv.Atoi(c.DayWeek)
 	if err != nil {
 		log.Println("Unable to convert weekday to int for cron:", c.Name, err)
 		return -1, err
 	}
+
 	dayofweekstr := ""
 	switch dayofweek {
 	case 0:
