@@ -12,11 +12,11 @@ import (
 )
 
 var cmd *int = flag.Int("t", 0, "get 0, set 1")
-
+var RedisUrl *string = flag.String("u", "redis://localhost:6739", "redis url")
 func main() {
 	flag.Parse()
 	RedisUrl := "redis://default:IphIvonQNRCMvMWfNFNqvouudrLHdOxe@crossover.proxy.rlwy.net:15257"
-	op, err := redis.ParseURL(RedisUrl)
+	op, err := redis.ParseURL(*RedisUrl)
 	if err != nil {
 		log.Panicln("ERROR parsing redis url")
 	}
@@ -49,9 +49,9 @@ func main() {
 	ctx := context.Background()
 	c1 := listing.Cron{
 		Name:    "start",
-		Minute:  "40",
+		Minute:  "33",
 		Hour:    "11",
-		Day:     "08",
+		Day:     "09",
 		Month:   "04",
 		DayWeek: "2",
 		Job:     "run bash",
@@ -61,7 +61,7 @@ func main() {
 		Name:    "stop",
 		Minute:  "20",
 		Hour:    "10",
-		Day:     "08",
+		Day:     "09",
 		Month:   "04",
 		DayWeek: "2",
 		Job:     "run bash",

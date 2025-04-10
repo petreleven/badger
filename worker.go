@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"time"
 
 	cronsched "worker/cronSched"
 	db "worker/dbRedis"
@@ -24,8 +25,10 @@ var (
 	name = flag.String("name", "worker1", "name of worker")
 )
 
-func main2() {
+func main() {
 	flag.Parse()
+	loc, _ := time.LoadLocation("UTC")
+	time.Local = loc
 
 	db.RedisUrl = u
 	cfg = config.Get()

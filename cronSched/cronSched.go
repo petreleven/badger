@@ -117,9 +117,11 @@ func addPendingCrons() error {
 					log.Println("Error checking if cron:", cron.Name, " ISready ", err)
 					break
 				}
+
 				if status {
 					jb := cron.Json()
 					pipeline.LPush(ctx, cfg.PendingQueue, cron.Name+":"+string(jb))
+					log.Println("pushing ")
 					break
 				}
 				t = t.Add(1 * time.Minute)
@@ -172,25 +174,12 @@ func isInRange(value string, t int) (bool, error) {
 }
 
 func IsCronReady(c *cronlisting.Cron, t time.Time) (bool, error) {
-	ready, err := isInRange(c.DayWeek, int(t.Weekday()))
-	if err != nil || !ready {
+	cutc, err := c.GetUTC()
+	if err != nil {
 		return false, err
 	}
-	ready, err = isInRange(c.Month, int(t.Month()))
-	if err != nil || !ready {
-		return false, err
+	if cutc == t.UTC().Unix() {
+		return true, nil
 	}
-	ready, err = isInRange(c.Day, t.Day())
-	if err != nil || !ready {
-		return false, err
-	}
-	ready, err = isInRange(c.Hour, t.Hour())
-	if err != nil || !ready {
-		return false, err
-	}
-	ready, err = isInRange(c.Minute, t.Minute())
-	if err != nil || !ready {
-		return false, err
-	}
-	return true, nil
+	return false, nil
 }
