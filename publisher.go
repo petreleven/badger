@@ -13,9 +13,9 @@ import (
 
 var cmd *int = flag.Int("t", 0, "get 0, set 1")
 var RedisUrl *string = flag.String("u", "redis://localhost:6739", "redis url")
+
 func main() {
 	flag.Parse()
-	RedisUrl := "redis://default:IphIvonQNRCMvMWfNFNqvouudrLHdOxe@crossover.proxy.rlwy.net:15257"
 	op, err := redis.ParseURL(*RedisUrl)
 	if err != nil {
 		log.Panicln("ERROR parsing redis url")
