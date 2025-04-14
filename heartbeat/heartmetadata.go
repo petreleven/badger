@@ -2,7 +2,7 @@ package heartbeat
 
 type WorkerMetaData struct {
 	IP        string
-	Hostname  string
-	pid       int
+	HostName  string
+	Pid       int
 	Timestamp int64
 }

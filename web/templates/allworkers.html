@@ -1,0 +1,20 @@
+{{range  .Workers}}
+<tr class="hover:bg-surface1">
+  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{.WorkerName}}</td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm">{{.HbMetaData.IP}}-{{.HbMetaData.Pid}}</td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm">
+    <div class="flex items-center">
+      <span class="bg-green w-2 h-2 rounded-full mr-2"></span>
+      <span class="capitalize">active</span>
+      <i data-feather="check-circle" class="w-4 h-4 ml-1 text-subtext0"></i>
+    </div>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm"> {{.HbMetaData.Timestamp}} </td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm">
+    <div class="flex items-center">
+      <i data-feather="loader" class="w-4 h-4 mr-2 text-yellow animate-spin"></i>
+      {{.HbMetaData.HostName}}
+    </div>
+  </td>
+</tr>
+{{end}}

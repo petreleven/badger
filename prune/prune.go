@@ -42,9 +42,10 @@ func prune() {
 		return
 	}
 	ctx := context.Background()
+	startunixT := time.Unix(int64(startUTC), 0).UTC()
 	redisClient.Pipelined(ctx, func(pipeline redis.Pipeliner) error {
 		for _, c := range *userqueuedJobs {
-			cronUTC, err := c.GetUTC()
+			cronUTC, err := c.GetUTC(startunixT)
 			if err != nil {
 				continue
 			}

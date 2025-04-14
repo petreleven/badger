@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"worker/config"
@@ -60,32 +61,100 @@ func (c *Cron) Json() (data []byte) {
 	return data
 }
 
-func parseCronRepeatField(field *string, level int) {
-	if *field != "*" {
+func isInRange(value string, t int) (bool, error) {
+	if len(value) > 2 {
+		divisor, err := strconv.Atoi(value[2:])
+		if err != nil {
+			return false, err
+		}
+		if t%divisor == 0 {
+			return true, nil
+		}
+	}
+	return false, nil
+
+}
+
+func parseCronRepeatField(field *string, level int, t time.Time) {
+	*field = strings.Trim(*field, " ")
+	if strings.HasPrefix(*field, "*/") {
+		switch level {
+		case MINUTE:
+			b, err := isInRange(*field, t.Minute())
+			if err != nil {
+				log.Println("Error parsing Field ", *field)
+			}
+			if b {
+				*field = fmt.Sprintf("%d", t.Minute())
+				return
+			}
+			*field = (*field)[2:]
+		case HOUR:
+			b, err := isInRange(*field, t.Hour())
+			if err != nil {
+				log.Println("Error parsing Field ", *field)
+			}
+			if b {
+				*field = fmt.Sprintf("%d", t.Hour())
+				return
+			}
+			*field = (*field)[2:]
+		case DAY:
+			b, err := isInRange(*field, t.Day())
+			if err != nil {
+				log.Println("Error parsing Field ", *field)
+			}
+			if b {
+				*field = fmt.Sprintf("%d", t.Day())
+				return
+			}
+			*field = (*field)[2:]
+		case MONTH:
+			b, err := isInRange(*field, int(t.Month()))
+			if err != nil {
+				log.Println("Error parsing Field ", *field)
+			}
+			if b {
+				*field = fmt.Sprintf("%d", t.Month())
+				return
+			}
+			*field = (*field)[2:]
+		case DAYWEEK:
+			b, err := isInRange(*field, int(t.Weekday()))
+			if err != nil {
+				log.Println("Error parsing Field ", *field)
+			}
+			if b {
+				*field = fmt.Sprintf("%d", t.Weekday())
+				return
+			}
+			*field = (*field)[2:]
+		}
 		return
 	}
-
-	switch level {
-	case MINUTE:
-		*field = fmt.Sprintf("%d", time.Now().Minute())
-	case HOUR:
-		*field = fmt.Sprintf("%d", time.Now().Hour())
-	case DAY:
-		*field = fmt.Sprintf("%d", time.Now().Day())
-	case MONTH:
-		*field = fmt.Sprintf("%d", time.Now().Month())
-	case DAYWEEK:
-		*field = fmt.Sprintf("%d", time.Now().Weekday())
+	if *field == "*" {
+		switch level {
+		case MINUTE:
+			*field = fmt.Sprintf("%d", t.Minute())
+		case HOUR:
+			*field = fmt.Sprintf("%d", t.Hour())
+		case DAY:
+			*field = fmt.Sprintf("%d", t.Day())
+		case MONTH:
+			*field = fmt.Sprintf("%d", t.Month())
+		case DAYWEEK:
+			*field = fmt.Sprintf("%d", t.Weekday())
+		}
 	}
 }
 
-func (c *Cron) GetUTC() (int64, error) {
-	parseCronRepeatField(&c.Minute, MINUTE)
-	parseCronRepeatField(&c.Hour, HOUR)
-	parseCronRepeatField(&c.Day, DAY)
-	parseCronRepeatField(&c.Month, MONTH)
-	parseCronRepeatField(&c.DayWeek, DAYWEEK)
-
+func (c *Cron) GetUTC(t time.Time) (int64, error) {
+	parseCronRepeatField(&c.Minute, MINUTE, t)
+	parseCronRepeatField(&c.Hour, HOUR, t)
+	parseCronRepeatField(&c.Day, DAY, t)
+	parseCronRepeatField(&c.Month, MONTH, t)
+	parseCronRepeatField(&c.DayWeek, DAYWEEK, t)
+	log.Println(*c)
 	dayofweek, err := strconv.Atoi(c.DayWeek)
 	if err != nil {
 		log.Println("Unable to convert weekday to int for cron:", c.Name, err)
@@ -133,10 +202,10 @@ func (c *Cron) GetUTC() (int64, error) {
 	value := fmt.Sprintf("%d", time.Now().UTC().Year()) + "-" + c.Month + "-" + c.Day +
 		" " + dayofweekstr + " " +
 		c.Hour + ":" + c.Minute
-	t, err := time.Parse(layout, value)
+	cronT, err := time.Parse(layout, value)
 	if err != nil {
 		log.Println("Unable to convert cron data to valid time for c:", c.Name, err)
 		return -1, err
 	}
-	return t.Unix(), nil
+	return cronT.Unix(), nil
 }

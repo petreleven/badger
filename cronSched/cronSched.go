@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -112,7 +111,8 @@ func addPendingCrons() error {
 		for _, cron := range *userlisting {
 			t := start
 			for t.Compare(end) <= 0 {
-				status, err := IsCronReady(&cron, t)
+				var status bool
+				status, err = IsCronReady(&cron, t)
 				if err != nil {
 					log.Println("Error checking if cron:", cron.Name, " ISready ", err)
 					break
@@ -121,7 +121,6 @@ func addPendingCrons() error {
 				if status {
 					jb := cron.Json()
 					pipeline.LPush(ctx, cfg.PendingQueue, cron.Name+":"+string(jb))
-					log.Println("pushing ")
 					break
 				}
 				t = t.Add(1 * time.Minute)
@@ -145,36 +144,8 @@ func ZeroOutSecondAndNanoSecond(t time.Time) time.Time {
 	return t.Truncate(time.Minute)
 }
 
-func isInRange(value string, t int) (bool, error) {
-	if value == "*" {
-		return true, nil
-	}
-
-	if strings.HasPrefix(value, "*/") {
-		if len(value) > 2 {
-			divisor, err := strconv.Atoi(value[2:])
-			if err != nil {
-				return false, err
-			}
-			if t%divisor == 0 {
-				return true, nil
-			}
-		}
-		return false, nil
-	}
-	v, err := strconv.Atoi(value)
-	if err != nil {
-		return false, err
-	}
-	if v == t {
-		return true, nil
-	}
-
-	return false, nil
-}
-
 func IsCronReady(c *cronlisting.Cron, t time.Time) (bool, error) {
-	cutc, err := c.GetUTC()
+	cutc, err := c.GetUTC(t)
 	if err != nil {
 		return false, err
 	}

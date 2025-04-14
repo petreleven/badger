@@ -12,6 +12,7 @@ type Config struct {
 	PidFileName         string
 	AddPendingMasterKey string
 	AddPendingLastUnix  string
+	AllWorkers          string
 	Queue
 }
 
@@ -23,6 +24,7 @@ func (c *Config) SetDefaults() {
 	c.UserQueue = "userqueue"
 	c.PendingQueue = "pendinqueue"
 	c.DoneQueue = "donequeue"
+	c.AllWorkers = "allworkers"
 }
 
 func Get() *Config {
@@ -37,4 +39,3 @@ func Get() *Config {
 	}
 	return cfg
 }
-

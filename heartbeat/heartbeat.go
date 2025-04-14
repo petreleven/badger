@@ -53,7 +53,7 @@ func hearBeat() {
 	// TODO
 	// SAVE WORKER METADATA IN A SERVICE
 	payload := generatePayload()
-	_, err := redisClient.HSet(context.Background(), "allworkers", cfg.WorkerProcName, payload).Result()
+	_, err := redisClient.HSet(context.Background(), cfg.AllWorkers, cfg.WorkerProcName, payload).Result()
 	if err != nil {
 		log.Println("ERROR REGISTERING WORKER:", err)
 	}

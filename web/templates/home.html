@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cron Cluster Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.28.0/feather.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.4/htmx.min.js"></script>
+    <style>
+    :root {
+    --ctp-base: #1e1e2e;
+    --ctp-surface0: #313244;
+    --ctp-surface1: #45475a;
+    --ctp-surface2: #585b70;
+    --ctp-text: #cdd6f4;
+    --ctp-subtext0: #a6adc8;
+    --ctp-lavender: #b4befe;
+    --ctp-blue: #89b4fa;
+    --ctp-mauve: #cba6f7;
+    --ctp-red: #f38ba8;
+    --ctp-yellow: #f9e2af;
+    --ctp-green: #a6e3a1;
+    --ctp-mantle: #181825;
+    --ctp-crust: #11111b;
+    }
+    body {
+    background-color: var(--ctp-base);
+    color: var(--ctp-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .bg-mantle { background-color: var(--ctp-mantle); }
+    .bg-surface0 { background-color: var(--ctp-surface0); }
+    .bg-surface1 { background-color: var(--ctp-surface1); }
+    .bg-crust { background-color: var(--ctp-crust); }
+    .text-subtext0 { color: var(--ctp-subtext0); }
+    .text-mauve { color: var(--ctp-mauve); }
+    .text-blue { color: var(--ctp-blue); }
+    .text-red { color: var(--ctp-red); }
+    .text-yellow { color: var(--ctp-yellow); }
+    .text-green { color: var(--ctp-green); }
+    .bg-mauve { background-color: var(--ctp-mauve); }
+    .bg-red { background-color: var(--ctp-red); }
+    .bg-yellow { background-color: var(--ctp-yellow); }
+    .bg-green { background-color: var(--ctp-green); }
+    .bg-blue { background-color: var(--ctp-blue); }
+    .hover-mauve:hover { background-color: var(--ctp-lavender); }
+    .border-surface1 { border-color: var(--ctp-surface1); }
+    .border-surface0 { border-color: var(--ctp-surface0); }
+    .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+    0%, 100% {
+    opacity: 1;
+    }
+    50% {
+    opacity: .5;
+    }
+    }
+    .animate-spin {
+    animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+    from {
+    transform: rotate(0deg);
+    }
+    to {
+    transform: rotate(360deg);
+    }
+    }
+    /* Modal styles */
+    .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 50;
+    }
+    .modal-content {
+    position: relative;
+    margin: 2% auto;
+    width: 80%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 0.5rem;
+    }
+    .close {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    }
+    .tab-content {
+    display: none;
+    }
+    .tab-content.active {
+    display: block;
+    }
+    /* Terminal-like styling */
+    .terminal {
+    background-color: var(--ctp-crust);
+    color: var(--ctp-text);
+    font-family: 'Courier New', monospace;
+    padding: 1rem;
+    border-radius: 0.25rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    }
+    .stderr {
+    color: var(--ctp-red);
+    }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="bg-mantle py-4 px-6 border-b border-surface0">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <i data-feather="clock" class="text-mauve"></i>
+          <h1 class="text-2xl font-semibold">Cron Cluster Dashboard</h1>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="px-3 py-1 rounded-full bg-surface0 text-sm flex items-center">
+            <div class="w-2 h-2 rounded-full bg-green inline-block mr-2 animate-pulse"></div>
+            Live
+          </div>
+          <button class="px-4 py-2 bg-mauve text-black rounded-md hover-mauve transition">
+          Refresh Data
+          </button>
+        </div>
+      </div>
+    </header>
+    <!-- Main Content -->
+    <main class="p-6">
+      <!-- Stats Overview -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-surface0 rounded-lg p-4 border border-surface1">
+          <div class="flex items-center text-mauve mb-2">
+            <i data-feather="server" class="mr-2"></i>
+            <h3 class="font-medium">Workers</h3>
+          </div>
+          <p class="text-3xl font-bold">4</p>
+          <p class="text-sm text-subtext0">3 active</p>
+        </div>
+        <div class="bg-surface0 rounded-lg p-4 border border-surface1">
+          <div class="flex items-center text-yellow mb-2">
+            <i data-feather="play-circle" class="mr-2"></i>
+            <h3 class="font-medium">Running Jobs</h3>
+          </div>
+          <p class="text-3xl font-bold">3</p>
+          <p class="text-sm text-subtext0">Across all queues</p>
+        </div>
+        <div class="bg-surface0 rounded-lg p-4 border border-surface1">
+          <div class="flex items-center text-green mb-2">
+            <i data-feather="check-circle" class="mr-2"></i>
+            <h3 class="font-medium">Completed</h3>
+          </div>
+          <p class="text-3xl font-bold">2,034</p>
+          <p class="text-sm text-subtext0">Successfully processed</p>
+        </div>
+        <div class="bg-surface0 rounded-lg p-4 border border-surface1">
+          <div class="flex items-center text-red mb-2">
+            <i data-feather="alert-circle" class="mr-2"></i>
+            <h3 class="font-medium">Failed</h3>
+          </div>
+          <p class="text-3xl font-bold">9</p>
+          <p class="text-sm text-subtext0">Requiring attention</p>
+        </div>
+      </div>
+      <!-- Workers Section -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+        <i data-feather="server" class="mr-2 text-blue"></i>
+        Worker Nodes
+        </h2>
+        <div class="bg-surface0 rounded-lg border border-surface1 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-mantle">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Worker</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">IP Address</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Uptime</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Current Job</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface1" hx-get="/allworkers" hx-swap="innerHTML" hx-trigger="load">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- Jobs Section -->
+      <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+        <i data-feather="activity" class="mr-2 text-blue"></i>
+        Recent Jobs
+        </h2>
+        <!-- Jobs Filter Controls -->
+        <div class="bg-surface0 rounded-lg border border-surface1 p-4 mb-4 flex flex-wrap gap-3">
+          <div class="flex items-center">
+            <span class="mr-2 text-sm">Status:</span>
+            <select class="bg-mantle text-text py-1 px-2 rounded border border-surface1">
+              <option value="all">All</option>
+              <option value="running">Running</option>
+              <option value="completed">Completed</option>
+              <option value="failed">Failed</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+          <div class="flex items-center">
+            <span class="mr-2 text-sm">Queue:</span>
+            <select class="bg-mantle text-text py-1 px-2 rounded border border-surface1">
+              <option value="all">All Queues</option>
+              <option value="default">default</option>
+              <option value="high-priority">high-priority</option>
+              <option value="email">email</option>
+            </select>
+          </div>
+          <div class="flex items-center">
+            <span class="mr-2 text-sm">Worker:</span>
+            <select class="bg-mantle text-text py-1 px-2 rounded border border-surface1">
+              <option value="all">All Workers</option>
+              <option value="worker-01">worker-01</option>
+              <option value="worker-02">worker-02</option>
+              <option value="worker-03">worker-03</option>
+              <option value="worker-04">worker-04</option>
+            </select>
+          </div>
+          <div class="flex items-center ml-auto">
+            <div class="relative">
+              <input type="text" placeholder="Search jobs..." class="pl-8 pr-2 py-1 bg-mantle rounded border border-surface1">
+              <i data-feather="search" class="absolute left-2 top-1.5 w-4 h-4 text-subtext0"></i>
+            </div>
+          </div>
+        </div>
+        <!-- Jobs Table -->
+        <div class="bg-surface0 rounded-lg border border-surface1 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-mantle">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Job Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Queue</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Worker</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Start Time</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Duration</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface1">
+                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(1)">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_26ae7d</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">email-digest</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">default</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-01</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex items-center">
+                      <span class="bg-yellow w-2 h-2 rounded-full mr-2"></span>
+                      <span>Running</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 09:32:18</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">42s</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <button class="text-blue hover:text-mauve" onclick="openJobModal(1); event.stopPropagation();">
+                    <i data-feather="eye" class="w-4 h-4"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(2)">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_15cf32</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">data-cleanup</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">high-priority</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-02</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex items-center">
+                      <span class="bg-yellow w-2 h-2 rounded-full mr-2"></span>
+                      <span>Running</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 09:27:45</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">5m 15s</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <button class="text-blue hover:text-mauve" onclick="openJobModal(2); event.stopPropagation();">
+                    <i data-feather="eye" class="w-4 h-4"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(3)">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_38fd12</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">image-processing</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">default</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-04</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex items-center">
+                      <span class="bg-red w-2 h-2 rounded-full mr-2"></span>
+                      <span>Failed</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 09:22:10</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">1m 12s</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <button class="text-blue hover:text-mauve" onclick="openJobModal(3); event.stopPropagation();">
+                    <i data-feather="eye" class="w-4 h-4"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(4)">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_47bd91</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">backup-database</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">high-priority</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-03</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex items-center">
+                      <span class="bg-green w-2 h-2 rounded-full mr-2"></span>
+                      <span>Completed</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 08:50:03</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">15m 27s</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <button class="text-blue hover:text-mauve" onclick="openJobModal(4); event.stopPropagation();">
+                    <i data-feather="eye" class="w-4 h-4"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(5)">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_59ae32</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">send-newsletter</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">email</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-01</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex items-center">
+                      <span class="bg-green w-2 h-2 rounded-full mr-2"></span>
+                      <span>Completed</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 08:32:15</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">2m 48s</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <button class="text-blue hover:text-mauve" onclick="openJobModal(5); event.stopPropagation();">
+                    <i data-feather="eye" class="w-4 h-4"></i>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(6)">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_62fe19</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">update-search-index</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">default</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-02</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex items-center">
+                      <span class="bg-green w-2 h-2 rounded-full mr-2"></span>
+                      <span>Completed</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 08:15:42</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm">3m 05s</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <button class="text-blue hover:text-mauve" onclick="openJobModal(6); event.stopPropagation();">
+                    <i data-feather="eye" class="w-4 h-4"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

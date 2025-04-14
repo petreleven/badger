@@ -10,6 +10,7 @@ import (
 	db "worker/dbRedis"
 	hb "worker/heartbeat"
 	"worker/prune"
+	"worker/web"
 
 	"github.com/sevlyar/go-daemon"
 
@@ -65,5 +66,6 @@ func main() {
 	hb.HearBeatStart()
 	cronsched.AddPendingCronsStart()
 	prune.PruneStart()
+	web.WebStart()
 	<-forever
 }
