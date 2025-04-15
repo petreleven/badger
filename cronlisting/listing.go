@@ -5,17 +5,15 @@ import (
 	"log"
 	"strings"
 
-	"worker/config"
 	"worker/dbRedis"
 )
 
-func GetUserQueuedTasks() (*[]Cron, error) {
+func GetQueuedTasks(queueName string) (*[]Cron, error) {
 	redisClient := dbRedis.Get()
-	cfg := *config.Get()
 	ctx := context.Background()
-	results, err := redisClient.HGetAll(ctx, cfg.UserQueue).Result()
+	results, err := redisClient.HGetAll(ctx, queueName).Result()
 	if err != nil {
-		log.Println("Error getting UserQueue")
+		log.Println("Error getting ", queueName)
 		return nil, err
 	}
 	//[startserver]10,11,12,13SystemspecsUseroptions

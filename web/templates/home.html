@@ -218,10 +218,10 @@
           <div class="flex items-center">
             <span class="mr-2 text-sm">Queue:</span>
             <select class="bg-mantle text-text py-1 px-2 rounded border border-surface1">
-              <option value="all">All Queues</option>
-              <option value="default">default</option>
-              <option value="high-priority">high-priority</option>
-              <option value="email">email</option>
+              <option value="all" >All Queues</option>
+              {{range $value := .CustomQueues}}
+              <option value="{{$value}}">{{$value}}</option>
+              {{end}}
             </select>
           </div>
           <div class="flex items-center">

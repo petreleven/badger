@@ -22,8 +22,6 @@ var (
 	d   = flag.Int("d",
 		0,
 		"run as daemon, 0 by default , 1 to run as daemon")
-	u    = flag.String("u", "redis://localhost:6739", "redis url")
-	name = flag.String("name", "worker1", "name of worker")
 )
 
 func main() {
@@ -31,14 +29,9 @@ func main() {
 	loc, _ := time.LoadLocation("UTC")
 	time.Local = loc
 
-	db.RedisUrl = u
 	cfg = config.Get()
+	db.RedisUrl = &cfg.RedisURL
 
-	if len(os.Args) > 1 {
-		cfg.PidFileName = *name + ".pid"
-		cfg.LogFileName = *name + ".log"
-		cfg.WorkerProcName = *name
-	}
 	if *d == 1 {
 		cntxt := &daemon.Context{
 			PidFileName: cfg.PidFileName,

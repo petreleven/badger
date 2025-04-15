@@ -72,7 +72,6 @@ func isInRange(value string, t int) (bool, error) {
 		}
 	}
 	return false, nil
-
 }
 
 func parseCronRepeatField(field *string, level int, t time.Time) {
@@ -154,7 +153,6 @@ func (c *Cron) GetUTC(t time.Time) (int64, error) {
 	parseCronRepeatField(&c.Day, DAY, t)
 	parseCronRepeatField(&c.Month, MONTH, t)
 	parseCronRepeatField(&c.DayWeek, DAYWEEK, t)
-	log.Println(*c)
 	dayofweek, err := strconv.Atoi(c.DayWeek)
 	if err != nil {
 		log.Println("Unable to convert weekday to int for cron:", c.Name, err)

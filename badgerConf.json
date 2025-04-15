@@ -1,0 +1,25 @@
+{
+    "WorkerProcName": "badger",
+    "LogFileName": "badger.log",
+    "PidFileName": "badger.pid",
+    "ClusterName": "badger:allworkers",
+    "PendingQueue": "badger:pendingQueue",
+    "DoneQueue": "badger:doneQueue",
+    "RetryQueue": "badger:retryQueue",
+    "FailedQueue": "badger:failed",
+    "CustomQueues": {
+        "userqueue": {
+            "priority": 1,
+            "retry": 0,
+            "doneLog": true,
+            "failLog": true
+        },
+        "lowpriorityqueue": {
+            "priority": 5,
+            "retry": 2,
+            "doneLog": false,
+            "failLog": true
+        }
+    }
+    "RedisUrl":"redis://localhost:6379"
+}

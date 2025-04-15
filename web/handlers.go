@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 
@@ -20,11 +19,22 @@ type allworkersStruct struct {
 func homepage(w http.ResponseWriter, req *http.Request) {
 	path := filepath.Join(templateAbs, "home.html")
 	t, err := template.ParseFiles(path)
+	t = template.Must(t, nil)
 	if err != nil {
 		errlogger(err)
 		return
 	}
-	t.Execute(w, t)
+	data := struct {
+		CustomQueues []string
+	}{
+		CustomQueues: []string{},
+	}
+	cfg := config.Get()
+	for key := range cfg.CustomQueues.Queues {
+		data.CustomQueues = append(data.CustomQueues, key)
+	}
+
+	t.Execute(w, data)
 }
 
 func getWorkers(w http.ResponseWriter, req *http.Request) {
@@ -38,7 +48,7 @@ func getWorkers(w http.ResponseWriter, req *http.Request) {
 	}
 
 	ctx := context.Background()
-	allworkers, _ := redisClient.HGetAll(ctx, cfg.AllWorkers).Result()
+	allworkers, _ := redisClient.HGetAll(ctx, cfg.ClusterName).Result()
 	renderData := []singleWorkerData{}
 	for key, value := range allworkers {
 		data := singleWorkerData{WorkerName: key}
@@ -46,7 +56,6 @@ func getWorkers(w http.ResponseWriter, req *http.Request) {
 		renderData = append(renderData, data)
 	}
 
-	log.Println(allworkers)
 	path := filepath.Join(templateAbs, "allworkers.html")
 	t, err := template.ParseFiles(path)
 	if err != nil {

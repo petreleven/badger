@@ -1,0 +1,19 @@
+{
+    "WorkerProcName": "badger:12145:621b0ea5-e446-4c8f-a6a4-bd48f3fd8c48",
+    "WorkerID": "12145:621b0ea5-e446-4c8f-a6a4-bd48f3fd8c48",
+    "LogFileName": "badger-12145:621b0ea5-e446-4c8f-a6a4-bd48f3fd8c48.log",
+    "PidFileName": "badger-12145:621b0ea5-e446-4c8f-a6a4-bd48f3fd8c48.pid",
+    "ClusterName": "badger:allworkers",
+    "PendingQueue": "badger:pendingQueue",
+    "DoneQueue": "badger:doneQueue",
+    "RetryQueue": "badger:retryQueue",
+    "FailedQueue": "badger:failed",
+    "CustomQueues": {
+        "Queues": {
+        "mycustomqueue":{
+          "Priority":0
+      }
+    }
+    },
+    "RedisURL": "redis://default:mzWjmkZrRnnlpCWvykgUrvVfcGDWWnCs@ballast.proxy.rlwy.net:33748"
+}

@@ -47,6 +47,7 @@ func connectAndSave() *redis.Client {
 	 */
 	err = redisClient.Ping(context.Background()).Err()
 	if err != nil {
+		log.Println("Are you sure redis at ", *RedisUrl, "is Running")
 		log.Fatalln("Failed to connect to redis: ", err)
 	}
 	log.Println("Connected to Redis")
