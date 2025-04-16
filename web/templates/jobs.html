@@ -1,0 +1,14 @@
+{{range .Jobs}}
+<tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(1)">
+  <td class="px-6 py-4 whitespace-nowrap text-sm text-red bg-surface2">{{.Cron.Name}}</td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{.Queue}}</td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm">{{.StartTime}}</td>
+  <td class="px-6 py-4 whitespace-nowrap text-sm">
+    <div class="flex items-center">
+      <span class="bg-yellow w-2 h-2 rounded-full mr-2"></span>
+      <span>Running</span>
+    </div>
+  </td>
+
+</tr>
+{{end}}

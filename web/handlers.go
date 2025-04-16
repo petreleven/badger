@@ -6,8 +6,13 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/redis/go-redis/v9"
 
 	"worker/config"
+	"worker/cronlisting"
 	db "worker/dbRedis"
 	hb "worker/heartbeat"
 )
@@ -70,4 +75,52 @@ func getWorkers(w http.ResponseWriter, req *http.Request) {
 	}
 	t = template.Must(t, nil)
 	t.Execute(w, renderDataStruct)
+}
+
+func getQueudJobs(w http.ResponseWriter, req *http.Request) {
+	var (
+		cfg         = config.Get()
+		redisClient = db.Get()
+		ctx         = context.Background()
+	)
+	queuename := req.URL.Query().Get("queuename")
+	type customCron struct {
+		Queue     string
+		Cron      cronlisting.Cron
+		StartTime int64
+	}
+	data := struct {
+		Jobs []customCron
+	}{Jobs: []customCron{}}
+	if queuename == "allqueues" {
+		for key := range cfg.CustomQueues.Queues {
+			results, err := redisClient.HGetAll(ctx, key).Result()
+			if err == redis.Nil {
+				continue
+			} else if err != nil {
+				errlogger(err)
+				continue
+			}
+			for cronName, cronData := range results {
+				cron := customCron{Queue: key}
+				cronDetails := strings.Fields(cronData)
+				err = cron.Cron.DecodeFromSlice(cronName, cronDetails)
+				if err != nil {
+					errlogger(err)
+					continue
+				}
+				cron.StartTime,_ = cron.Cron.GetUTC(time.Now())
+				data.Jobs = append(data.Jobs, cron)
+			}
+
+		}
+	}
+
+	path := filepath.Join(templateAbs, "jobs.html")
+	t, err := template.ParseFiles(path)
+	if err != nil {
+		errlogger(err)
+	}
+	t = template.Must(t, nil)
+	t.Execute(w, data)
 }

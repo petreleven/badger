@@ -11,10 +11,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var cmd *int = flag.Int("t", 0, "get 0, set 1")
-var RedisUrl *string = flag.String("u", "redis://localhost:6739", "redis url")
+var (
+	cmd      *int    = flag.Int("t", 0, "get 0, set 1")
+	RedisUrl *string = flag.String("u", "redis://localhost:6739", "redis url")
+)
 
-func main2() {
+func main() {
 	flag.Parse()
 	op, err := redis.ParseURL(*RedisUrl)
 	if err != nil {
@@ -23,7 +25,7 @@ func main2() {
 	options := &redis.Options{
 		Addr:             op.Addr,
 		Password:         op.Password,
-		DB:               1,
+		DB:               0,
 		DisableIndentity: true,
 		MaxRetries:       10,
 		PoolSize:         2,
@@ -49,62 +51,24 @@ func main2() {
 	ctx := context.Background()
 	c1 := listing.Cron{
 		Name:    "start",
-		Minute:  "*",
-		Hour:    "*/20",
-		Day:     "*",
-		Month:   "*",
+		Minute:  "20",
+		Hour:    "20",
+		Day:     "01",
+		Month:   "12",
 		DayWeek: "*",
 		Job:     "run bash",
 		Queue:   "userqueue",
 	}
-	c2 := listing.Cron{
-		Name:    "stop",
-		Minute:  "20",
-		Hour:    "10",
-		Day:     "09",
-		Month:   "04",
-		DayWeek: "2",
-		Job:     "run bash",
-		Queue:   "userqueue",
-	}
+
 	if *cmd == 1 {
-		status, err := redisClient.HSet(ctx, "userqueue",
-			"badgerWorker:"+c1.Name+":100", c1.Encode()).Result()
+		_, err := redisClient.HSet(ctx, "mycustomqueue",
+			c1.Name, c1.Encode()).Result()
 		if err != nil {
 			log.Println("Unable to save to UserQueue: ", err)
 		}
-		log.Println(status)
-		status, err = redisClient.HSet(ctx, "userqueue",
-			"badgerWorker:"+c2.Name+":100", c2.Encode()).Result()
-		if err != nil {
-			log.Println("Unable to save to UserQueue: ", err)
-		}
-		log.Println(status)
 		log.Println("sent")
 	}
 
-	r, err := redisClient.HGetAll(ctx, "userqueue").Result()
+	r, err := redisClient.HGetAll(ctx, "mycustomqueue").Result()
 	log.Println(r)
 }
-
-/*func AddToUserQueue(c *listing.Cron) {
-	ctx := context.Background()
-	_, err := redisClient.HSet(ctx, cfg2.UserQueue,
-		c.Name+":string", c.Encode()).Result()
-	if err != nil {
-		log.Println("Unable to save to UserQueue: ", err)
-	}
-}
-
-func tester() {
-	log.Println("")
-	d := time.Now()
-	d.Weekday()
-	d.Day()
-	data, err := json.Marshal(d)
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(string(data))
-}
-*/

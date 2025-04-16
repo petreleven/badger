@@ -23,8 +23,8 @@ type CustomQueues struct {
 }
 
 type Config struct {
-	WorkerProcName string
-	WorkerID       string
+	WorkerID       string `json:"-"`
+	WorkerProcName string `json:"-"`
 	LogFileName    string
 	PidFileName    string
 	ClusterName    string
@@ -170,7 +170,6 @@ func Get() *Config {
 		// If there's an error parsing, use defaults
 		cfg = &Config{}
 	}
-
 	// Set any missing defaults
 	cfg.SetDefaults()
 

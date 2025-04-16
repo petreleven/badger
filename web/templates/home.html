@@ -137,7 +137,7 @@
       </div>
     </header>
     <!-- Main Content -->
-    <main class="p-6">
+    <main class="container mx-auto px-16">
       <!-- Stats Overview -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-surface0 rounded-lg p-4 border border-surface1">
@@ -218,7 +218,14 @@
           <div class="flex items-center">
             <span class="mr-2 text-sm">Queue:</span>
             <select class="bg-mantle text-text py-1 px-2 rounded border border-surface1">
-              <option value="all" >All Queues</option>
+              <option value="all"
+                hx-get="/getQueudJobs?queuename=allqueues"
+                hx-target="#jobs-tbody"
+                hx-trigger="load"
+                hx-swap="innerHTML"
+                >
+                All Queues
+              </option>
               {{range $value := .CustomQueues}}
               <option value="{{$value}}">{{$value}}</option>
               {{end}}
@@ -247,131 +254,14 @@
             <table class="w-full">
               <thead class="bg-mantle">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">ID</th>
                   <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Job Name</th>
                   <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Queue</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Worker</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">StartTime</th>
                   <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Start Time</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Duration</th>
-                  <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-surface1">
-                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(1)">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_26ae7d</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">email-digest</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">default</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-01</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <div class="flex items-center">
-                      <span class="bg-yellow w-2 h-2 rounded-full mr-2"></span>
-                      <span>Running</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 09:32:18</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">42s</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <button class="text-blue hover:text-mauve" onclick="openJobModal(1); event.stopPropagation();">
-                    <i data-feather="eye" class="w-4 h-4"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(2)">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_15cf32</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">data-cleanup</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">high-priority</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-02</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <div class="flex items-center">
-                      <span class="bg-yellow w-2 h-2 rounded-full mr-2"></span>
-                      <span>Running</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 09:27:45</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">5m 15s</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <button class="text-blue hover:text-mauve" onclick="openJobModal(2); event.stopPropagation();">
-                    <i data-feather="eye" class="w-4 h-4"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(3)">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_38fd12</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">image-processing</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">default</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-04</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <div class="flex items-center">
-                      <span class="bg-red w-2 h-2 rounded-full mr-2"></span>
-                      <span>Failed</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 09:22:10</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">1m 12s</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <button class="text-blue hover:text-mauve" onclick="openJobModal(3); event.stopPropagation();">
-                    <i data-feather="eye" class="w-4 h-4"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(4)">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_47bd91</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">backup-database</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">high-priority</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-03</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <div class="flex items-center">
-                      <span class="bg-green w-2 h-2 rounded-full mr-2"></span>
-                      <span>Completed</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 08:50:03</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">15m 27s</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <button class="text-blue hover:text-mauve" onclick="openJobModal(4); event.stopPropagation();">
-                    <i data-feather="eye" class="w-4 h-4"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(5)">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_59ae32</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">send-newsletter</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">email</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-01</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <div class="flex items-center">
-                      <span class="bg-green w-2 h-2 rounded-full mr-2"></span>
-                      <span>Completed</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 08:32:15</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">2m 48s</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <button class="text-blue hover:text-mauve" onclick="openJobModal(5); event.stopPropagation();">
-                    <i data-feather="eye" class="w-4 h-4"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(6)">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">job_62fe19</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">update-search-index</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">default</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">worker-02</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <div class="flex items-center">
-                      <span class="bg-green w-2 h-2 rounded-full mr-2"></span>
-                      <span>Completed</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">2025-04-11 08:15:42</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm">3m 05s</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <button class="text-blue hover:text-mauve" onclick="openJobModal(6); event.stopPropagation();">
-                    <i data-feather="eye" class="w-4 h-4"></i>
-                    </button>
-                  </td>
-                </tr>
+              <tbody class="divide-y divide-surface1" id="jobs-tbody">
+
               </tbody>
             </table>
           </div>

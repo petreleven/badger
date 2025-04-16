@@ -28,7 +28,7 @@ func connectAndSave() *redis.Client {
 	options := &redis.Options{
 		Addr:             op.Addr,
 		Password:         op.Password,
-		DB:               1,
+		DB:               0,
 		DisableIndentity: true,
 		MaxRetries:       10,
 		PoolSize:         2,
