@@ -7,8 +7,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"worker/config"
 )
 
 const (
@@ -36,7 +34,6 @@ func (c *Cron) Encode() string {
 }
 
 func (c *Cron) DecodeFromSlice(cronName string, cronDetails []string) error {
-	cfg := *config.Get()
 	if len(cronDetails) < 5 {
 		return fmt.Errorf("Cron details len doesnt match expected length\n")
 	}
@@ -48,7 +45,6 @@ func (c *Cron) DecodeFromSlice(cronName string, cronDetails []string) error {
 	c.Month = cronDetails[3]
 	c.DayWeek = cronDetails[4]
 	c.Job = "eg run bash shell"
-	c.Queue = cfg.PendingQueue
 
 	return nil
 }

@@ -2,6 +2,7 @@ package prune
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"strconv"
 	"time"
@@ -11,21 +12,34 @@ import (
 	"worker/config"
 	"worker/cronlisting"
 	"worker/dbRedis"
+	hb "worker/heartbeat"
+)
+
+var (
+	redisClient *redis.Client
+	cfg         *config.Config
 )
 
 func PruneStart() {
-	prune()
+	redisClient = dbRedis.Get()
+	cfg = config.Get()
+	pruneCustomQueues()
+	pruneZombieWorkers()
 	go func() {
 		for {
 			time.Sleep(30 * time.Second)
-			prune()
+			pruneCustomQueues()
+		}
+	}()
+	go func() {
+		for {
+			time.Sleep(30 * time.Second)
+			pruneZombieWorkers()
 		}
 	}()
 }
 
-func prune() {
-	redisClient := dbRedis.Get()
-	cfg := config.Get()
+func pruneCustomQueues() {
 	for key := range cfg.CustomQueues.Queues {
 		addPendingLastUnix := key + ":lastUnixCheck"
 		userqueuedJobs, err := cronlisting.GetQueuedTasks(key)
@@ -58,5 +72,37 @@ func prune() {
 			}
 			return nil
 		})
+	}
+}
+
+func pruneZombieWorkers() {
+	ctx := context.Background()
+
+	result, err := redisClient.HGetAll(ctx, cfg.ClusterName).Result()
+	if err != nil && err != redis.Nil {
+		log.Println("Unable to get the workers in cluster for pruning ", err)
+		return
+	}
+	t := time.Now().Add(-5 * time.Minute).Unix()
+	workersToPrune := []string{}
+	for key, value := range result {
+		hbMetaData := hb.WorkerMetaData{}
+		err = json.Unmarshal([]byte(value), &hbMetaData)
+		if err != nil {
+			log.Println("Unable to decode worker metadata ", err)
+			continue
+		}
+		if hbMetaData.Timestamp <= t {
+			workersToPrune = append(workersToPrune, key)
+		}
+	}
+	_, err = redisClient.Pipelined(ctx, func(pipeline redis.Pipeliner) error {
+		for _, value := range workersToPrune {
+			redisClient.HDel(ctx, cfg.ClusterName, value)
+		}
+		return nil
+	})
+	if err != nil {
+		log.Println("Unable to do piplene in fn pruneZombieWorkers  ", err)
 	}
 }

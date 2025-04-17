@@ -28,10 +28,6 @@ type Config struct {
 	LogFileName    string
 	PidFileName    string
 	ClusterName    string
-	PendingQueue   string
-	DoneQueue      string
-	RetryQueue     string
-	FailedQueue    string
 	CustomQueues   CustomQueues
 	RedisURL       string
 }
@@ -62,22 +58,6 @@ func (c *Config) SetDefaults() {
 
 	if c.ClusterName == "" {
 		c.ClusterName = "badger:allworkers"
-	}
-
-	if c.PendingQueue == "" {
-		c.PendingQueue = "badger:pendingQueue"
-	}
-
-	if c.DoneQueue == "" {
-		c.DoneQueue = "badger:doneQueue"
-	}
-
-	if c.RetryQueue == "" {
-		c.RetryQueue = "badger:retryQueue"
-	}
-
-	if c.FailedQueue == "" {
-		c.FailedQueue = "badger:failed"
 	}
 
 	if c.RedisURL == "" {
