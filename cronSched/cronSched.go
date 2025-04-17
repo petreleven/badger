@@ -2,10 +2,14 @@ package cronSched
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"os/exec"
 	"strconv"
+	"syscall"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 
 	"worker/config"
@@ -29,6 +33,7 @@ func AddPendingCronsStart() {
 			addPendingCrons()
 		}
 	}()
+	startWorkers()
 }
 
 // Assuming a cluster of workers , try to take charge of adding cron jobs to queue
@@ -156,4 +161,122 @@ func IsCronReady(c *cronlisting.Cron, t time.Time) (bool, error) {
 		return true, nil
 	}
 	return false, nil
+}
+
+func worker(queueKey string, value config.CustomQueue, workerID string) {
+	ctx := context.Background()
+
+	pendingQueue := "badger:pending:" + queueKey
+	runningHash := "badger:running:" + queueKey
+	delayedQueue := "badger:delayed:" + queueKey
+	failedQueue := "badger:failed:" + queueKey
+	doneQueue := "badger:done:" + queueKey
+
+	// Try to get a job from the pending queue
+	job, err := redisClient.BRPop(ctx, 10*time.Second, pendingQueue).Result()
+	if err != nil {
+		if err != redis.Nil {
+			log.Printf("Worker %s: Unable to pop from %s: %v", workerID, pendingQueue, err)
+		}
+		return
+	}
+
+	// job[0] is the queue name, job[1] is the actual job
+	jobCmd := job[1]
+	jobID := uuid.New().String()
+
+	// Use a transaction to atomically add the job to the running hash
+	var setcmd *redis.IntCmd
+	workerKey := fmt.Sprintf("%s:%s", workerID, jobID)
+	setcmd = redisClient.HSet(ctx, runningHash, workerKey, jobCmd)
+	_, err = setcmd.Result()
+	if err != nil {
+		log.Printf("Worker %s: Failed to add job to running hash: %v", workerID, err)
+		// Put job back to pending
+		redisClient.LPush(ctx, pendingQueue, jobCmd)
+		return
+	}
+
+	cmd := exec.Command("bash", "-c", jobCmd)
+	cmd.Stdout = log.Writer()
+	cmd.Stderr = log.Writer()
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+	elapseDuration := time.Duration(value.Timeout) * time.Second
+
+	err = cmd.Start()
+	if err != nil {
+		log.Printf("Worker %s: Failed to start command: %v", workerID, err)
+		// Remove from running hash and move to failed
+		redisClient.HDel(ctx, runningHash, workerKey)
+		redisClient.LPush(ctx, failedQueue, jobCmd)
+		return
+	}
+
+	done := make(chan error)
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	select {
+	case err = <-done:
+		// Remove from running hash regardless of outcome
+		redisClient.HDel(ctx, runningHash, workerKey)
+
+		if err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				exitcode := exitErr.Sys().(syscall.WaitStatus).ExitStatus()
+				if exitcode == 75 { // unix temp failure
+					log.Printf("Worker %s: Job temporarily failed, moving to delayed", workerID)
+					redisClient.LPush(ctx, delayedQueue, jobCmd)
+				} else {
+					log.Printf("Worker %s: Job failed with exit code: %d", workerID, exitcode)
+					redisClient.LPush(ctx, failedQueue, jobCmd)
+				}
+			} else {
+				log.Printf("Worker %s: Job failed with error: %v", workerID, err)
+				redisClient.LPush(ctx, failedQueue, jobCmd)
+			}
+		} else {
+			log.Printf("Worker %s: Job completed successfully", workerID)
+			redisClient.LPush(ctx, doneQueue, jobCmd)
+		}
+
+	case <-time.After(elapseDuration):
+		log.Printf("Worker %s: Job timed out after %v seconds", workerID, value.Timeout)
+
+		// Kill process group
+		if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
+			log.Printf("Worker %s: Failed to kill process: %v", workerID, err)
+		}
+
+		// Remove from running hash and move to failed
+		redisClient.HDel(ctx, runningHash, workerKey)
+		redisClient.LPush(ctx, failedQueue, jobCmd)
+	}
+}
+
+func startWorkers() {
+	// Generate a unique process ID for this instance
+	processID := uuid.New().String()
+
+	// Start workers for each queue
+	for queueKey, queueConfig := range cfg.CustomQueues.Queues {
+		concurrency := queueConfig.Concurrency
+		if concurrency <= 0 {
+			concurrency = 1
+		}
+
+		for i := 0; i < concurrency; i++ {
+			workerID := fmt.Sprintf("%s:worker:%d", processID, i)
+
+			go func(key string, config config.CustomQueue, id string) {
+				for {
+					worker(key, config, id)
+					// Small pause between iterations to prevent tight loop
+					time.Sleep(10 * time.Second)
+				}
+			}(queueKey, queueConfig, workerID)
+		}
+	}
 }

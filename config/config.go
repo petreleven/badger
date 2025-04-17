@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -12,10 +13,12 @@ import (
 )
 
 type CustomQueue struct {
-	Priority uint8
-	Retry    uint8
-	DoneLog  bool
-	FailLog  bool
+	Priority    uint8
+	Retry       uint8
+	DoneLog     bool
+	FailLog     bool
+	Timeout     int64
+	Concurrency int
 }
 
 type CustomQueues struct {
@@ -66,6 +69,20 @@ func (c *Config) SetDefaults() {
 
 	if c.CustomQueues.Queues == nil {
 		c.CustomQueues.Queues = make(map[string]CustomQueue)
+	}
+	for q := range c.CustomQueues.Queues {
+		log.Println(q)
+		if c.CustomQueues.Queues[q].Timeout == 0 {
+			temp := c.CustomQueues.Queues[q]
+			temp.Timeout = 60
+			c.CustomQueues.Queues[q] = temp
+		}
+		if c.CustomQueues.Queues[q].Concurrency == 0 {
+			temp := c.CustomQueues.Queues[q]
+			temp.Concurrency = 1
+			c.CustomQueues.Queues[q] = temp
+		}
+
 	}
 }
 

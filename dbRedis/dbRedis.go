@@ -3,6 +3,7 @@ package dbRedis
 import (
 	"context"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -11,9 +12,12 @@ import (
 var (
 	redisClient *redis.Client
 	RedisUrl    *string
+	lock        sync.RWMutex
 )
 
 func Get() *redis.Client {
+	lock.Lock()
+	defer lock.Unlock()
 	if redisClient == nil {
 		redisClient = connectAndSave()
 	}
