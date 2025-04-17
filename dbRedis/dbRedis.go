@@ -35,11 +35,11 @@ func connectAndSave() *redis.Client {
 		DB:               0,
 		DisableIndentity: true,
 		MaxRetries:       10,
-		PoolSize:         2,
+		PoolSize:         20,
 		DialTimeout:      5 * time.Second,
 		ReadTimeout:      10 * time.Second,
 		WriteTimeout:     5 * time.Second,
-		PoolTimeout:      1 * time.Second,
+		PoolTimeout:      60 * time.Second,
 	}
 
 	if err != nil {
