@@ -4,15 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"html/template"
+	"maps"
 	"net/http"
 	"path/filepath"
 	"strings"
-	"time"
-
-	"github.com/redis/go-redis/v9"
 
 	"worker/config"
-	"worker/cronlisting"
 	db "worker/dbRedis"
 	hb "worker/heartbeat"
 )
@@ -77,50 +74,88 @@ func getWorkers(w http.ResponseWriter, req *http.Request) {
 	t.Execute(w, renderDataStruct)
 }
 
-func getQueudJobs(w http.ResponseWriter, req *http.Request) {
+func showQueuePreview(w http.ResponseWriter, req *http.Request) {
 	var (
 		cfg         = config.Get()
 		redisClient = db.Get()
 		ctx         = context.Background()
 	)
-	queuename := req.URL.Query().Get("queuename")
-	type customCron struct {
-		Queue     string
-		Cron      cronlisting.Cron
-		StartTime int64
+	queueNames := maps.Keys(cfg.CustomQueues.Queues)
+
+	type singleQueueStruct struct {
+		Name        string
+		Concurrency int
+		PendingLen  int64
+		RunningLen  int64
+		DelayedLen  int64
+		FailedLen   int64
+		DoneLen     int64
 	}
 	data := struct {
-		Jobs []customCron
-	}{Jobs: []customCron{}}
-	if queuename == "allqueues" {
-		for key := range cfg.CustomQueues.Queues {
-			results, err := redisClient.HGetAll(ctx, key).Result()
-			if err == redis.Nil {
-				continue
-			} else if err != nil {
-				errlogger(err)
-				continue
-			}
-			for cronName, cronData := range results {
-				cron := customCron{Queue: key}
-				cronDetails := strings.Fields(cronData)
-				err = cron.Cron.DecodeFromSlice(cronName, cronDetails)
-				if err != nil {
-					errlogger(err)
-					continue
-				}
-				cron.StartTime,_ = cron.Cron.GetUTC(time.Now())
-				data.Jobs = append(data.Jobs, cron)
-			}
+		AllQueues []singleQueueStruct
+	}{
+		[]singleQueueStruct{},
+	}
 
+	for queueKey := range queueNames {
+		singleQueue := singleQueueStruct{
+			Name:        queueKey,
+			Concurrency: cfg.CustomQueues.Queues[queueKey].Concurrency,
 		}
+		pendingQueue := "badger:pending:" + queueKey
+		runningHash := "badger:running:" + queueKey
+		delayedQueue := "badger:delayed:" + queueKey
+		failedQueue := "badger:failed:" + queueKey
+		doneQueue := "badger:done:" + queueKey
+
+		pendingLen, _ := redisClient.LLen(ctx, pendingQueue).Result()
+		runningLen, _ := redisClient.HLen(ctx, runningHash).Result()
+		delayedLen, _ := redisClient.LLen(ctx, delayedQueue).Result()
+		failedLen, _ := redisClient.LLen(ctx, failedQueue).Result()
+		doneLen, _ := redisClient.LLen(ctx, doneQueue).Result()
+
+		singleQueue.PendingLen = pendingLen
+		singleQueue.RunningLen = runningLen
+		singleQueue.DelayedLen = delayedLen
+		singleQueue.FailedLen = failedLen
+		singleQueue.DoneLen = doneLen
+		data.AllQueues = append(data.AllQueues, singleQueue)
+	}
+	path := filepath.Join(templateAbs, "jobs.html")
+	tmpl, _ := template.ParseFiles(path)
+	tmpl = template.Must(tmpl, nil)
+	tmpl.Execute(w, data)
+}
+
+func inspectQueue(w http.ResponseWriter, req *http.Request) {
+	var (
+		redisClient = db.Get()
+		ctx         = context.Background()
+	)
+	htmxHeader := req.Header.Get("Hx-Request")
+	templateName := ""
+	if htmxHeader == "" {
+		templateName = "inspectQueueFull.html"
+	} else {
+		templateName = "inspectQueue.html"
 	}
 
-	path := filepath.Join(templateAbs, "jobs.html")
-	t, err := template.ParseFiles(path)
-	if err != nil {
-		errlogger(err)
+	queueName := req.URL.Query().Get("queuename")
+	data := struct {
+		Jobs []string
+	}{Jobs: []string{}}
+	if strings.HasPrefix(queueName, "badger:running") {
+		res, _ := redisClient.HGetAll(ctx, queueName).Result()
+		ks := maps.Keys(res)
+		for k := range ks {
+			data.Jobs = append(data.Jobs, k)
+		}
+	} else {
+		res, _ := redisClient.LRange(ctx, queueName, 0, 50).Result()
+		data.Jobs = res
 	}
-	t = template.Must(t, nil)
-	t.Execute(w, data)
+	path := filepath.Join(templateAbs, templateName)
+	tmpl, _ := template.ParseFiles(path)
+	tmpl = template.Must(tmpl, nil)
+	tmpl.Execute(w, data)
 }

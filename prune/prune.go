@@ -23,18 +23,16 @@ var (
 func PruneStart() {
 	redisClient = dbRedis.Get()
 	cfg = config.Get()
-	pruneCustomQueues()
-	pruneZombieWorkers()
 	go func() {
 		for {
-			time.Sleep(30 * time.Second)
 			pruneCustomQueues()
+			time.Sleep(30 * time.Second)
 		}
 	}()
 	go func() {
 		for {
-			time.Sleep(30 * time.Second)
 			pruneZombieWorkers()
+			time.Sleep(30 * time.Second)
 		}
 	}()
 }
@@ -83,7 +81,7 @@ func pruneZombieWorkers() {
 		log.Println("Unable to get the workers in cluster for pruning ", err)
 		return
 	}
-	t := time.Now().Add(-5 * time.Minute).Unix()
+	t := time.Now().Add(-3 * time.Minute).Unix()
 	workersToPrune := []string{}
 	for key, value := range result {
 		hbMetaData := hb.WorkerMetaData{}

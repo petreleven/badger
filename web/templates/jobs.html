@@ -1,14 +1,61 @@
-{{range .Jobs}}
-<tr class="hover:bg-surface1 cursor-pointer" onclick="openJobModal(1)">
-  <td class="px-6 py-4 whitespace-nowrap text-sm text-red bg-surface2">{{.Cron.Name}}</td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{.Queue}}</td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm">{{.StartTime}}</td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm">
-    <div class="flex items-center">
-      <span class="bg-yellow w-2 h-2 rounded-full mr-2"></span>
-      <span>Running</span>
-    </div>
+{{range .AllQueues}}
+<tr class="hover:bg-surface1  transition duration-150">
+  <td class="px-6 py-4 whitespace-nowrap text-md font-medium text-blue">{{.Name}}</td>
+  <td class="px-6 py-4 whitespace-nowrap text-md font-medium text-blue">{{.Concurrency}}</td>
+  <td class="px-6 py-4 whitespace-nowrap text-md">
+    <span
+      class="bg-surface1 text-yellow px-2 py-1 rounded-md cursor-pointer border border-yellow-darker"
+      hx-get="/inspectQueue?queuename=badger:pending:{{.Name}}"
+      hx-trigger="click"
+      hx-target="#main-content"
+      hx-swap="innerHTML"
+      hx-replace-url="true"
+      hx-push-url="true"
+    >{{.PendingLen}}</span>
   </td>
-
+  <td class="px-6 py-4 whitespace-nowrap text-md">
+    <span
+      class="bg-surface1 text-mauve px-2 py-1 rounded-md cursor-pointer border border-mauve-darker"
+      hx-get="/inspectQueue?queuename=badger:running:{{.Name}}"
+      hx-trigger="click"
+      hx-target="#main-content"
+      hx-swap="innerHTML"
+      hx-replace-url="true"
+      hx-push-url="true"
+    >{{.RunningLen}}</span>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-md">
+    <span
+      class="bg-surface1 text-red px-2 py-1 rounded-md cursor-pointer border border-red-darker"
+      hx-get="/inspectQueue?queuename=badger:failed:{{.Name}}"
+      hx-trigger="click"
+      hx-target="#main-content"
+      hx-swap="innerHTML"
+      hx-replace-url="true"
+      hx-push-url="true"
+    >{{.FailedLen}}</span>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-md">
+    <span
+      class="bg-surface1 text-subtext0 px-2 py-1 rounded-md cursor-pointer border border-subtext0-darker"
+      hx-get="/inspectQueue?queuename=badger:delayed:{{.Name}}"
+      hx-trigger="click"
+      hx-target="#main-content"
+      hx-swap="innerHTML"
+      hx-replace-url="true"
+      hx-push-url="true"
+    >{{.DelayedLen}}</span>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap text-md">
+    <span
+      class="bg-surface1 text-green px-2 py-1 rounded-md cursor-pointer border border-green-darker"
+      hx-get="/inspectQueue?queuename=badger:done:{{.Name}}"
+      hx-trigger="click"
+      hx-target="#main-content"
+      hx-swap="innerHTML"
+      hx-replace-url="true"
+      hx-push-url="true"
+    >{{.DoneLen}}</span>
+  </td>
 </tr>
 {{end}}

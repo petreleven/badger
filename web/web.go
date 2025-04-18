@@ -32,7 +32,9 @@ func WebStart() {
 
 	mux.HandleFunc("/", homepage)
 	mux.HandleFunc("/allworkers", getWorkers)
-	mux.HandleFunc("/getQueudJobs", getQueudJobs)
+	mux.HandleFunc("/showQueuePreview", showQueuePreview)
+	mux.HandleFunc("/inspectQueue", inspectQueue)
+
 	ctx, cancelCtx := context.WithCancel(context.Background())
 	defer cancelCtx()
 	server := &http.Server{

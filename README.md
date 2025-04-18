@@ -70,23 +70,6 @@ Usage of ./worker:
   -d    Run as a daemon in the background
 ```
 
-## ✅ Example Queues
-
-```json
-"CustomQueues": {
-  "Queues": {
-    "emailQueue": {
-      "Concurrency": 10,
-      "Timeout": 30
-    },
-    "pdfGeneration": {
-      "Concurrency": 3,
-      "Timeout": 120
-    }
-  }
-}
-```
-
 ## 📝 License
 
 [MIT License](LICENSE)

@@ -137,7 +137,7 @@
       </div>
     </header>
     <!-- Main Content -->
-    <main class="container mx-auto px-16">
+    <main class="container mx-auto px-16" id="main-content">
       <!-- Stats Overview -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-surface0 rounded-lg p-4 border border-surface1">
@@ -191,77 +191,41 @@
                   <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Current Job</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-surface1" hx-get="/allworkers" hx-swap="innerHTML" hx-trigger="load">
+              <tbody class="divide-y divide-surface1"
+                hx-get="/allworkers"
+                hx-swap="innerHTML"
+                hx-trigger="load">
               </tbody>
             </table>
           </div>
         </div>
       </div>
       <!-- Jobs Section -->
-      <div class="mb-8">
-        <h2 class="text-xl font-semibold mb-4 flex items-center">
-        <i data-feather="activity" class="mr-2 text-blue"></i>
-        Recent Jobs
-        </h2>
-        <!-- Jobs Filter Controls -->
-        <div class="bg-surface0 rounded-lg border border-surface1 p-4 mb-4 flex flex-wrap gap-3">
-          <div class="flex items-center">
-            <span class="mr-2 text-sm">Status:</span>
-            <select class="bg-mantle text-text py-1 px-2 rounded border border-surface1">
-              <option value="all">All</option>
-              <option value="running">Running</option>
-              <option value="completed">Completed</option>
-              <option value="failed">Failed</option>
-              <option value="pending">Pending</option>
-            </select>
-          </div>
-          <div class="flex items-center">
-            <span class="mr-2 text-sm">Queue:</span>
-            <select class="bg-mantle text-text py-1 px-2 rounded border border-surface1">
-              <option value="all"
-                hx-get="/getQueudJobs?queuename=allqueues"
-                hx-target="#jobs-tbody"
-                hx-trigger="load"
-                hx-swap="innerHTML"
-                >
-                All Queues
-              </option>
-              {{range $value := .CustomQueues}}
-              <option value="{{$value}}">{{$value}}</option>
-              {{end}}
-            </select>
-          </div>
-          <div class="flex items-center">
-            <span class="mr-2 text-sm">Worker:</span>
-            <select class="bg-mantle text-text py-1 px-2 rounded border border-surface1">
-              <option value="all">All Workers</option>
-              <option value="worker-01">worker-01</option>
-              <option value="worker-02">worker-02</option>
-              <option value="worker-03">worker-03</option>
-              <option value="worker-04">worker-04</option>
-            </select>
-          </div>
-          <div class="flex items-center ml-auto">
-            <div class="relative">
-              <input type="text" placeholder="Search jobs..." class="pl-8 pr-2 py-1 bg-mantle rounded border border-surface1">
-              <i data-feather="search" class="absolute left-2 top-1.5 w-4 h-4 text-subtext0"></i>
-            </div>
-          </div>
-        </div>
+      <div class="mb-8"
+        hx-get="/showQueuePreview"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+        hx-target="#jobs-tbody"
+        >
         <!-- Jobs Table -->
         <div class="bg-surface0 rounded-lg border border-surface1 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead class="bg-mantle">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Job Name</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Queue</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">StartTime</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Queue Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Threads/Concurrency</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Pending</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Running</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Failed</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Delayed</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Done</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-surface1" id="jobs-tbody">
-
+              <tbody
+                class="divide-y divide-surface1"
+                id="jobs-tbody"
+                >
               </tbody>
             </table>
           </div>
