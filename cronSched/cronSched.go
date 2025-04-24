@@ -260,10 +260,10 @@ func worker(queueKey string, value config.CustomQueue, workerID string) {
 				exitcode := exitErr.Sys().(syscall.WaitStatus).ExitStatus()
 				if exitcode == 75 { // unix temp failure
 					log.Printf("Worker %s: Job temporarily failed, moving to delayed", workerID)
-					redisClient.LPush(ctx, delayedQueue, jobCmd)
+					redisClient.LPush(ctx, delayedQueue, jobID+":"+jobCmd)
 				} else {
 					log.Printf("Worker %s: Job failed with exit code: %d", workerID, exitcode)
-					redisClient.LPush(ctx, failedQueue, jobCmd)
+					redisClient.LPush(ctx, failedQueue, jobID+":"+jobCmd)
 				}
 			} else {
 				log.Printf("Worker %s: Job failed with error: %v", workerID, err)
@@ -284,7 +284,7 @@ func worker(queueKey string, value config.CustomQueue, workerID string) {
 
 		// Remove from running hash and move to failed
 		redisClient.HDel(ctx, runningHash, workerKey)
-		redisClient.LPush(ctx, failedQueue, jobCmd)
+		redisClient.LPush(ctx, failedQueue, jobID+":"+jobCmd)
 	}
 }
 

@@ -203,6 +203,7 @@ func inspectQueue(w http.ResponseWriter, req *http.Request) {
 				data.JobsID = append(data.JobsID, id)
 			} else {
 				data.Jobs = append(data.Jobs, v)
+				data.JobsID = append(data.JobsID, "")
 			}
 		}
 		data.Total, _ = redisClient.LLen(ctx, queueName).Result()
