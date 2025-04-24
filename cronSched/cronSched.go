@@ -22,6 +22,30 @@ var (
 	cfg         *config.Config
 )
 
+type DoneLogWriter struct {
+	QueueKey string
+	JobId    string
+}
+
+func (w *DoneLogWriter) Write(p []byte) (n int, err error) {
+	redisClient := dbRedis.Get()
+	ctx := context.Background()
+
+	existingLog, err := redisClient.HGet(ctx, "badger:joblog", w.JobId).Result()
+	if err != nil && err != redis.Nil {
+		return 0, err
+	}
+	if existingLog != "" {
+		existingLog += "\n"
+	}
+	existingLog += string(p)
+
+	if err := redisClient.HSet(ctx, "badger:joblog", w.JobId, existingLog).Err(); err != nil {
+		return 0, err
+	}
+	return len(p), nil
+}
+
 func AddPendingCronsStart() {
 	redisClient = dbRedis.Get()
 	cfg = config.Get()
@@ -165,6 +189,7 @@ func IsCronReady(c *cronlisting.Cron, t time.Time) (bool, error) {
 
 func worker(queueKey string, value config.CustomQueue, workerID string) {
 	ctx := context.Background()
+	cfg := config.Get()
 
 	pendingQueue := "badger:pending:" + queueKey
 	runningHash := "badger:running:" + queueKey
@@ -198,8 +223,15 @@ func worker(queueKey string, value config.CustomQueue, workerID string) {
 	}
 
 	cmd := exec.Command("bash", "-c", jobCmd)
-	cmd.Stdout = log.Writer()
-	cmd.Stderr = log.Writer()
+	doneWriter := &DoneLogWriter{QueueKey: queueKey, JobId: jobID}
+	log.Println(cfg.CustomQueues.Queues[queueKey].DoneLog)
+	if cfg.CustomQueues.Queues[queueKey].DoneLog {
+		cmd.Stdout = doneWriter
+		cmd.Stderr = doneWriter
+	} else {
+		cmd.Stdout = log.Writer()
+		cmd.Stderr = log.Writer()
+	}
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	elapseDuration := time.Duration(value.Timeout) * time.Second
@@ -235,11 +267,11 @@ func worker(queueKey string, value config.CustomQueue, workerID string) {
 				}
 			} else {
 				log.Printf("Worker %s: Job failed with error: %v", workerID, err)
-				redisClient.LPush(ctx, failedQueue, jobCmd)
+				redisClient.LPush(ctx, failedQueue, jobID+":"+jobCmd)
 			}
 		} else {
 			log.Printf("Worker %s: Job completed successfully", workerID)
-			redisClient.LPush(ctx, doneQueue, jobCmd)
+			redisClient.LPush(ctx, doneQueue, jobID+":"+jobCmd)
 		}
 
 	case <-time.After(elapseDuration):

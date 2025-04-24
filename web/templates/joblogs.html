@@ -1,0 +1,26 @@
+<div class="bg-surface0 rounded-lg border border-surface1 overflow-hidden shadow-lg max-w-3xl mx-auto">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-mantle">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtext0">Logs</th>
+                </tr>
+            </thead>
+            <tbody
+                class="divide-y divide-surface1"
+                id="jobs-tbody"
+                >
+                <tr class="hover:bg-surface1 hover:text-lavender transition duration-150">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="h-8 w-2 rounded-l bg-gradient-to-b from-blue-light to-mauve-light opacity-75"></div>
+                            <div class="bg-surface1 bg-opacity-60 rounded-r py-1 px-3 ml-1 shadow-inner">
+                                <div class="font-mono text-sm font-medium text-blue">{{.Logs}}</div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

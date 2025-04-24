@@ -143,17 +143,17 @@
         <div class="bg-surface0 rounded-lg p-4 border border-surface1">
           <div class="flex items-center text-mauve mb-2">
             <i data-feather="server" class="mr-2"></i>
-            <h3 class="font-medium">Workers</h3>
+            <h3 class="font-medium">Worker Nodes</h3>
           </div>
-          <p class="text-3xl font-bold">4</p>
-          <p class="text-sm text-subtext0">3 active</p>
+          <p class="text-3xl font-bold">{{.WorkersCount}}</p>
+
         </div>
         <div class="bg-surface0 rounded-lg p-4 border border-surface1">
           <div class="flex items-center text-yellow mb-2">
             <i data-feather="play-circle" class="mr-2"></i>
             <h3 class="font-medium">Running Jobs</h3>
           </div>
-          <p class="text-3xl font-bold">3</p>
+          <p class="text-3xl font-bold">{{.RunningCount}}</p>
           <p class="text-sm text-subtext0">Across all queues</p>
         </div>
         <div class="bg-surface0 rounded-lg p-4 border border-surface1">
@@ -161,7 +161,7 @@
             <i data-feather="check-circle" class="mr-2"></i>
             <h3 class="font-medium">Completed</h3>
           </div>
-          <p class="text-3xl font-bold">2,034</p>
+          <p class="text-3xl font-bold">{{.DoneCount}}</p>
           <p class="text-sm text-subtext0">Successfully processed</p>
         </div>
         <div class="bg-surface0 rounded-lg p-4 border border-surface1">
@@ -169,7 +169,7 @@
             <i data-feather="alert-circle" class="mr-2"></i>
             <h3 class="font-medium">Failed</h3>
           </div>
-          <p class="text-3xl font-bold">9</p>
+          <p class="text-3xl font-bold">{{.FailedCount}}</p>
           <p class="text-sm text-subtext0">Requiring attention</p>
         </div>
       </div>

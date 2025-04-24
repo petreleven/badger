@@ -27,13 +27,20 @@
         class="divide-y divide-surface1"
         id="jobs-tbody"
         >
-        {{range $value := .Jobs}}
+        {{range $i, $value := .Jobs}}
         <tr class="hover:bg-surface1 hover:text-lavender transition duration-150">
           <td class="px-6 py-4">
-            <div class="flex items-center">
+            <div class="flex items-center"
+              hx-get="/inspectJob?logid={{index $.JobsID $i}}"
+              hx-trigger="click"
+              hx-target="#main-content"
+              hx-swap="innerHTML"
+              hx-replace-url="true"
+              hx-push-url="true"
+              >
               <div class="h-8 w-2 rounded-l bg-gradient-to-b from-blue-light to-mauve-light opacity-75"></div>
               <div class="bg-surface1 bg-opacity-60 rounded-r py-1 px-3 ml-1 shadow-inner">
-                <div class="font-mono text-sm font-medium text-blue">{{$value}}</div>
+                <div class="font-mono text-sm font-medium text-blue" id="{{index $.JobsID $i}}">{{$value}}</div>
                 <div class="text-xs text-subtext0">Last run: 2h ago</div>
               </div>
             </div>
@@ -63,6 +70,7 @@
         Showing <span class="text-blue">{{len .Jobs}}</span> of <span class="text-mauve">{{.Total}}</span> jobs
       </div>
       <div class="flex items-center space-x-1">
+        {{if  gt .NextStart  10}}
         <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-surface1 hover:bg-surface1-lighter text-blue transition-colors duration-200"
           hx-get="/inspectQueue?queuename={{.Name}}&start={{.PrevStart}}"
           hx-trigger="click"
@@ -75,18 +83,20 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </a>
+        {{end}}
+        {{if lt .NextStart  .Total}}
         <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-surface1 hover:bg-surface1-lighter text-blue transition-colors duration-200"
           hx-get="/inspectQueue?queuename={{.Name}}&start={{.NextStart}}"
           hx-trigger="click"
           hx-target="#main-content"
           hx-swap="innerHTML"
           hx-replace-url="true"
-          hx-push-url="true"
-          >
+          hx-push-url="true">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </a>
+        {{end}}
       </div>
     </div>
   </div>

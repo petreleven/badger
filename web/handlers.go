@@ -20,21 +20,42 @@ type allworkersStruct struct {
 }
 
 func homepage(w http.ResponseWriter, req *http.Request) {
+	var (
+		cfg         = config.Get()
+		redisClient = db.Get()
+		ctx         = context.Background()
+	)
 	path := filepath.Join(templateAbs, "home.html")
 	t, err := template.ParseFiles(path)
 	t = template.Must(t, nil)
+
 	if err != nil {
 		errlogger(err)
 		return
 	}
 	data := struct {
 		CustomQueues []string
+		WorkersCount int64
+		RunningCount int64
+		DoneCount    int64
+		FailedCount  int64
 	}{
 		CustomQueues: []string{},
 	}
-	cfg := config.Get()
+	workers, _ := redisClient.HLen(ctx, cfg.ClusterName).Result()
+	data.WorkersCount = workers
 	for key := range cfg.CustomQueues.Queues {
 		data.CustomQueues = append(data.CustomQueues, key)
+
+		runningHash := "badger:running:" + key
+		failedQueue := "badger:failed:" + key
+		doneQueue := "badger:done:" + key
+		runningLen, _ := redisClient.HLen(ctx, runningHash).Result()
+		failedLen, _ := redisClient.LLen(ctx, failedQueue).Result()
+		doneLen, _ := redisClient.LLen(ctx, doneQueue).Result()
+		data.RunningCount += runningLen
+		data.DoneCount += doneLen
+		data.FailedCount += failedLen
 	}
 
 	t.Execute(w, data)
@@ -158,6 +179,7 @@ func inspectQueue(w http.ResponseWriter, req *http.Request) {
 
 	data := struct {
 		Jobs      []string
+		JobsID    []string
 		Total     int64
 		Name      string
 		PrevStart int64
@@ -172,7 +194,17 @@ func inspectQueue(w http.ResponseWriter, req *http.Request) {
 		data.Total, _ = redisClient.HLen(ctx, queueName).Result()
 	} else {
 		res, _ := redisClient.LRange(ctx, queueName, start, stop).Result()
-		data.Jobs = res
+		for _, v := range res {
+			s := strings.Split(v, ":")
+			if len(s) > 1 {
+				id := s[0]
+				job := s[1]
+				data.Jobs = append(data.Jobs, job)
+				data.JobsID = append(data.JobsID, id)
+			} else {
+				data.Jobs = append(data.Jobs, v)
+			}
+		}
 		data.Total, _ = redisClient.LLen(ctx, queueName).Result()
 	}
 	data.Name = queueName
@@ -181,5 +213,23 @@ func inspectQueue(w http.ResponseWriter, req *http.Request) {
 	if data.PrevStart < 0 {
 		data.PrevStart = 0
 	}
+	tmpl.Execute(w, data)
+}
+
+func inspectJob(w http.ResponseWriter, req *http.Request) {
+	var (
+		redisClient = db.Get()
+		ctx         = context.Background()
+	)
+	logid := req.URL.Query().Get("logid")
+	res, _ := redisClient.HGet(ctx, "badger:joblog", logid).Result()
+	data := struct {
+		Logs string
+	}{}
+	data.Logs = res
+
+	path := filepath.Join(templateAbs, "joblogs.html")
+	tmpl, _ := template.ParseFiles(path)
+	tmpl = template.Must(tmpl, nil)
 	tmpl.Execute(w, data)
 }
