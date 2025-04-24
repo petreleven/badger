@@ -165,6 +165,7 @@ func Get() *Config {
 	err = json.Unmarshal(data, cfg)
 	if err != nil {
 		// If there's an error parsing, use defaults
+		log.Println("Error reading ", configPath, " :", err)
 		cfg = &Config{}
 	}
 	// Set any missing defaults

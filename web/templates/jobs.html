@@ -5,7 +5,7 @@
   <td class="px-6 py-4 whitespace-nowrap text-md">
     <span
       class="bg-surface1 text-yellow px-2 py-1 rounded-md cursor-pointer border border-yellow-darker"
-      hx-get="/inspectQueue?queuename=badger:pending:{{.Name}}"
+      hx-get="/inspectQueue?queuename=badger:pending:{{.Name}}&start=0"
       hx-trigger="click"
       hx-target="#main-content"
       hx-swap="innerHTML"
@@ -16,7 +16,7 @@
   <td class="px-6 py-4 whitespace-nowrap text-md">
     <span
       class="bg-surface1 text-mauve px-2 py-1 rounded-md cursor-pointer border border-mauve-darker"
-      hx-get="/inspectQueue?queuename=badger:running:{{.Name}}"
+      hx-get="/inspectQueue?queuename=badger:running:{{.Name}}&start=0"
       hx-trigger="click"
       hx-target="#main-content"
       hx-swap="innerHTML"
@@ -27,7 +27,7 @@
   <td class="px-6 py-4 whitespace-nowrap text-md">
     <span
       class="bg-surface1 text-red px-2 py-1 rounded-md cursor-pointer border border-red-darker"
-      hx-get="/inspectQueue?queuename=badger:failed:{{.Name}}"
+      hx-get="/inspectQueue?queuename=badger:failed:{{.Name}}&start=0"
       hx-trigger="click"
       hx-target="#main-content"
       hx-swap="innerHTML"
@@ -38,7 +38,7 @@
   <td class="px-6 py-4 whitespace-nowrap text-md">
     <span
       class="bg-surface1 text-subtext0 px-2 py-1 rounded-md cursor-pointer border border-subtext0-darker"
-      hx-get="/inspectQueue?queuename=badger:delayed:{{.Name}}"
+      hx-get="/inspectQueue?queuename=badger:delayed:{{.Name}}&start=0"
       hx-trigger="click"
       hx-target="#main-content"
       hx-swap="innerHTML"
@@ -49,7 +49,7 @@
   <td class="px-6 py-4 whitespace-nowrap text-md">
     <span
       class="bg-surface1 text-green px-2 py-1 rounded-md cursor-pointer border border-green-darker"
-      hx-get="/inspectQueue?queuename=badger:done:{{.Name}}"
+      hx-get="/inspectQueue?queuename=badger:done:{{.Name}}&start=0"
       hx-trigger="click"
       hx-target="#main-content"
       hx-swap="innerHTML"

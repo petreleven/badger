@@ -8,7 +8,7 @@
       </div>
       <div class="relative">
         <input type="text" placeholder="Search jobs..."
-          class="bg-surface1 rounded-md px-3 py-1 text-sm w-48 focus:outline-none focus:ring-1 focus:ring-blue" />
+        class="bg-surface1 rounded-md px-3 py-1 text-sm w-48 focus:outline-none focus:ring-1 focus:ring-blue" />
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute right-2 top-1.5 text-subtext0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
@@ -26,7 +26,7 @@
       <tbody
         class="divide-y divide-surface1"
         id="jobs-tbody"
-      >
+        >
         {{range $value := .Jobs}}
         <tr class="hover:bg-surface1 hover:text-lavender transition duration-150">
           <td class="px-6 py-4">
@@ -40,16 +40,16 @@
           </td>
           <td class="px-4 py-4 flex justify-center gap-2">
             <button class="group relative flex items-center justify-center w-9 h-9 rounded-full bg-surface1 hover:bg-blue transition-all duration-200 tooltip-trigger">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue group-hover:text-mantle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span class="tooltip absolute -top-8 bg-surface2 text-text px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Retry Job</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue group-hover:text-mantle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span class="tooltip absolute -top-8 bg-surface2 text-text px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Retry Job</span>
             </button>
             <button class="group relative flex items-center justify-center w-9 h-9 rounded-full bg-surface1 hover:bg-red transition-all duration-200 tooltip-trigger">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red group-hover:text-mantle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              <span class="tooltip absolute -top-8 bg-surface2 text-text px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Delete Job</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red group-hover:text-mantle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            <span class="tooltip absolute -top-8 bg-surface2 text-text px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Delete Job</span>
             </button>
           </td>
         </tr>
@@ -60,37 +60,33 @@
   <div class="bg-mantle px-6 py-3 border-t border-surface1">
     <div class="flex flex-col md:flex-row justify-between items-center">
       <div class="text-xs text-subtext0 mb-3 md:mb-0">
-        Showing <span class="text-blue">5</span> of <span class="text-mauve">12</span> jobs
+        Showing <span class="text-blue">{{len .Jobs}}</span> of <span class="text-mauve">{{.Total}}</span> jobs
       </div>
       <div class="flex items-center space-x-1">
-        <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-surface1 hover:bg-surface1-lighter text-blue transition-colors duration-200">
+        <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-surface1 hover:bg-surface1-lighter text-blue transition-colors duration-200"
+          hx-get="/inspectQueue?queuename={{.Name}}&start={{.PrevStart}}"
+          hx-trigger="click"
+          hx-target="#main-content"
+          hx-swap="innerHTML"
+          hx-replace-url="true"
+          hx-push-url="true"
+          >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
           </svg>
         </a>
-        <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-blue text-mantle font-medium text-sm shadow-inner transition-colors duration-200">1</a>
-        <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-surface1 hover:bg-surface1-lighter text-blue hover:text-lavender font-medium text-sm transition-colors duration-200">2</a>
-        <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-surface1 hover:bg-surface1-lighter text-blue hover:text-lavender font-medium text-sm transition-colors duration-200">3</a>
-        <span class="flex items-center justify-center h-8 text-subtext0">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-          </svg>
-        </span>
-        <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-surface1 hover:bg-surface1-lighter text-blue hover:text-lavender font-medium text-sm transition-colors duration-200">12</a>
-        <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-surface1 hover:bg-surface1-lighter text-blue transition-colors duration-200">
+        <a href="#" class="flex items-center justify-center h-8 w-8 rounded bg-surface1 hover:bg-surface1-lighter text-blue transition-colors duration-200"
+          hx-get="/inspectQueue?queuename={{.Name}}&start={{.NextStart}}"
+          hx-trigger="click"
+          hx-target="#main-content"
+          hx-swap="innerHTML"
+          hx-replace-url="true"
+          hx-push-url="true"
+          >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
           </svg>
         </a>
-      </div>
-      <div class="flex items-center space-x-2 mt-3 md:mt-0">
-        <span class="text-xs text-subtext0">Per page:</span>
-        <select class="bg-surface1 rounded text-xs px-2 py-1 focus:outline-none border border-surface2 focus:border-blue-light">
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-        </select>
       </div>
     </div>
   </div>

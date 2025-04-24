@@ -7,6 +7,7 @@ import (
 	"maps"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"worker/config"
@@ -133,16 +134,34 @@ func inspectQueue(w http.ResponseWriter, req *http.Request) {
 		ctx         = context.Background()
 	)
 	htmxHeader := req.Header.Get("Hx-Request")
-	templateName := ""
-	if htmxHeader == "" {
-		templateName = "inspectQueueFull.html"
-	} else {
-		templateName = "inspectQueue.html"
-	}
 
+	var tmpl *template.Template
+
+	// check htmx headers
+	if htmxHeader == "" {
+		path1 := filepath.Join(templateAbs, "inspectQueueFull.html")
+		path2 := filepath.Join(templateAbs, "inspectQueue.html")
+		tmpl = template.Must(template.ParseFiles(path1, path2))
+	} else {
+		path1 := filepath.Join(templateAbs, "inspectQueue.html")
+		tmpl, _ = template.ParseFiles(path1)
+	}
+	// get queries
 	queueName := req.URL.Query().Get("queuename")
+	startStr := req.URL.Query().Get("start")
+	start, err := strconv.ParseInt(startStr, 10, 64)
+	if err != nil {
+		start = 0
+	}
+	var jobsRange int64 = 10
+	stop := start + jobsRange
+
 	data := struct {
-		Jobs []string
+		Jobs      []string
+		Total     int64
+		Name      string
+		PrevStart int64
+		NextStart int64
 	}{Jobs: []string{}}
 	if strings.HasPrefix(queueName, "badger:running") {
 		res, _ := redisClient.HGetAll(ctx, queueName).Result()
@@ -150,12 +169,17 @@ func inspectQueue(w http.ResponseWriter, req *http.Request) {
 		for k := range ks {
 			data.Jobs = append(data.Jobs, k)
 		}
+		data.Total, _ = redisClient.HLen(ctx, queueName).Result()
 	} else {
-		res, _ := redisClient.LRange(ctx, queueName, 0, 50).Result()
+		res, _ := redisClient.LRange(ctx, queueName, start, stop).Result()
 		data.Jobs = res
+		data.Total, _ = redisClient.LLen(ctx, queueName).Result()
 	}
-	path := filepath.Join(templateAbs, templateName)
-	tmpl, _ := template.ParseFiles(path)
-	tmpl = template.Must(tmpl, nil)
+	data.Name = queueName
+	data.NextStart = stop
+	data.PrevStart = start - jobsRange
+	if data.PrevStart < 0 {
+		data.PrevStart = 0
+	}
 	tmpl.Execute(w, data)
 }
