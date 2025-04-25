@@ -1,19 +1,27 @@
-{{range  .Workers}}
-<tr class="hover:bg-surface1">
-  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">{{.WorkerName}}</td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm">{{.HbMetaData.IP}}-{{.HbMetaData.Pid}}</td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm">
+{{range .Workers}}
+<tr class="table-row-hover transition-all duration-200">
+  <td class="px-6 py-4 whitespace-nowrap">
     <div class="flex items-center">
-      <span class="bg-green w-2 h-2 rounded-full mr-2"></span>
-      <span class="capitalize">active</span>
-      <i data-feather="check-circle" class="w-4 h-4 ml-1 text-subtext0"></i>
+      <div class="flex-shrink-0 h-8 w-8 flex items-center justify-center rounded-md bg-surface1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cpu" viewBox="0 0 16 16">
+          <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0m-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z"/>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <div class="text-sm font-medium">{{.WorkerName}}</div>
+      </div>
     </div>
   </td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm"> {{.HbMetaData.Timestamp}} </td>
-  <td class="px-6 py-4 whitespace-nowrap text-sm">
-    <div class="flex items-center">
-      <i data-feather="loader" class="w-4 h-4 mr-2 text-yellow animate-spin"></i>
-      {{.HbMetaData.HostName}}
+  <td class="px-6 py-4 whitespace-nowrap">
+    <div class="text-sm">{{.HbMetaData.Timestamp}}</div>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap">
+    <div class="text-sm">{{.HbMetaData.IP}}</div>
+    <div class="text-xs text-subtext0">PID: {{.HbMetaData.Pid}}</div>
+  </td>
+  <td class="px-6 py-4 whitespace-nowrap">
+    <div class="flex items-center justify-center px-2 py-1 rounded-md">
+      <span class="text-sm font-medium text-yellow text-center">{{.HbMetaData.HostName}}</span>
     </div>
   </td>
 </tr>

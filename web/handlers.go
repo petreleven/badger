@@ -154,19 +154,36 @@ func inspectQueue(w http.ResponseWriter, req *http.Request) {
 		redisClient = db.Get()
 		ctx         = context.Background()
 	)
-	htmxHeader := req.Header.Get("Hx-Request")
 
 	var tmpl *template.Template
+	funcMap := template.FuncMap{
+		// The name "inc" is what the function will be called in the template text.
+		"div": func(i int64, j int64) int {
+			res := int(i / j)
+			if res <= 0 {
+				res = 1
+			}
+			return res
+		},
+	}
 
 	// check htmx headers
-	if htmxHeader == "" {
+	if req.Header.Get("Hx-Request") == "" {
 		path1 := filepath.Join(templateAbs, "inspectQueueFull.html")
 		path2 := filepath.Join(templateAbs, "inspectQueue.html")
-		tmpl = template.Must(template.ParseFiles(path1, path2))
+		tmpl = template.Must(
+			template.New("inspectQueueFull.html").
+				Funcs(funcMap).
+				ParseFiles(path1, path2))
+
 	} else {
 		path1 := filepath.Join(templateAbs, "inspectQueue.html")
-		tmpl, _ = template.ParseFiles(path1)
+		tmpl = template.Must(
+			template.New("inspectQueue.html").
+				Funcs(funcMap).
+				ParseFiles(path1))
 	}
+
 	// get queries
 	queueName := req.URL.Query().Get("queuename")
 	startStr := req.URL.Query().Get("start")

@@ -1,26 +1,71 @@
-<div class="bg-surface0 rounded-lg border border-surface1 overflow-hidden shadow-lg max-w-3xl mx-auto">
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-mantle">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-subtext0">Logs</th>
-                </tr>
-            </thead>
-            <tbody
-                class="divide-y divide-surface1"
-                id="jobs-tbody"
-                >
-                <tr class="hover:bg-surface1 hover:text-lavender transition duration-150">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center">
-                            <div class="h-8 w-2 rounded-l bg-gradient-to-b from-blue-light to-mauve-light opacity-75"></div>
-                            <div class="bg-surface1 bg-opacity-60 rounded-r py-1 px-3 ml-1 shadow-inner">
-                                <div class="font-mono text-sm font-medium text-blue"><pre>{{.Logs}}</pre></div>
-                            </div>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+<div class="container mx-auto px-4 py-6">
+  <!-- Breadcrumb navigation -->
+ <!--  <div class="flex items-center mb-6 text-sm">
+    <a href="#"
+      class="text-subtext0 hover:text-blue flex items-center"
+      hx-get="/"
+      hx-trigger="click"
+      hx-target="#main-content"
+      hx-swap="innerHTML"
+      hx-replace-url="true"
+      hx-push-url="true">
+      <i data-feather="home" class="w-4 h-4 mr-1"></i>
+      Dashboard
+    </a>
+    <i data-feather="chevron-right" class="w-4 h-4 mx-2 text-subtext0"></i>
+    <a href="#"
+      class="text-subtext0 hover:text-blue flex items-center"
+      hx-get="/inspectQueue"
+      hx-trigger="click"
+      hx-target="#main-content"
+      hx-swap="innerHTML">
+      <i data-feather="list" class="w-4 h-4 mr-1"></i>
+      Queue
+    </a>
+    <i data-feather="chevron-right" class="w-4 h-4 mx-2 text-subtext0"></i>
+    <span class="text-lavender">Job Logs</span>
+  </div> -->
+  <div class="dashboard-card shadow-lg max-w-5xl mx-auto overflow-hidden">
+    <div class="relative  px-6 py-4 border-b border-surface1">
+      <div class="absolute inset-0 bg-surface0 transform skew-x-[-20deg] filter "></div>
+      <div class="relative flex justify-between items-center">
+        <div>
+          <h3 class="text-lavender font-semibold text-lg flex items-center">
+          <i data-feather="file-text" class="w-5 h-5 mr-2"></i>
+          Job Execution Logs
+          </h3>
+        </div>
+
+      </div>
     </div>
+    <div class="px-6 py-4 bg-mantle border-b border-surface1">
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center">
+          <span class="text-xs font-medium text-subtext0 mr-2">Status:</span>
+          <span class="status-pill bg-green-500  border border-green border-opacity-30">
+            <span class="bg-green w-2 h-2 rounded-full mr-1"></span>
+            Completed
+          </span>
+        </div>
+      </div>
+    </div>
+    <!-- Log content -->
+    <div class="terminal p-4 mx-4 my-4 overflow-auto max-h-96">
+    <pre>{{.Logs}}</pre>
+  </div>
+  <div class="bg-mantle px-6 py-4 border-t border-surface1">
+    <div class="flex justify-between items-center">
+      <button class="btn bg-surface1 text-blue hover:bg-blue hover:text-mantle flex items-center px-4">
+      <i data-feather="arrow-left" class="w-4 h-4 mr-2"></i>
+      Back to Queue
+      </button>
+      <div class="flex space-x-2">
+        <button class="btn bg-blue text-mantle hover:opacity-90 flex items-center px-4">
+        <i data-feather="refresh-cw" class="w-4 h-4 mr-2"></i>
+        Retry Job
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 </div>
