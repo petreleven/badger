@@ -222,15 +222,23 @@ func inspectJob(w http.ResponseWriter, req *http.Request) {
 		redisClient = db.Get()
 		ctx         = context.Background()
 	)
+	htmxHeader := req.Header.Get("Hx-Request")
 	logid := req.URL.Query().Get("logid")
+	var tmpl *template.Template
+	if htmxHeader == "" {
+		path1 := filepath.Join(templateAbs, "joblogsfull.html")
+		path2 := filepath.Join(templateAbs, "joblogs.html")
+		tmpl, _ = template.ParseFiles(path1, path2)
+		tmpl = template.Must(tmpl, nil)
+	} else {
+		path := filepath.Join(templateAbs, "joblogs.html")
+		tmpl, _ = template.ParseFiles(path)
+	}
+
 	res, _ := redisClient.HGet(ctx, "badger:joblog", logid).Result()
 	data := struct {
 		Logs string
 	}{}
 	data.Logs = res
-
-	path := filepath.Join(templateAbs, "joblogs.html")
-	tmpl, _ := template.ParseFiles(path)
-	tmpl = template.Must(tmpl, nil)
 	tmpl.Execute(w, data)
 }
