@@ -50,18 +50,17 @@ func AddPendingCronsStart() {
 	redisClient = dbRedis.Get()
 	cfg = config.Get()
 
-	addPendingCrons()
 	go func() {
 		for {
-			time.Sleep(30 * time.Second)
 			addPendingCrons()
+			time.Sleep(10 * time.Second)
 		}
 	}()
 	startWorkers()
 }
 
 // Assuming a cluster of workers , try to take charge of adding cron jobs to queue
-func addPendingCrons() error {
+func addPendingCrons() {
 	ctx := context.Background()
 	for key := range cfg.CustomQueues.Queues {
 		var (
@@ -79,7 +78,7 @@ func addPendingCrons() error {
 		// first make sure the key doesnt exist
 		_, err := redisClient.Get(ctx, addToPendingLock).Result()
 		if err != redis.Nil {
-			return err
+			continue
 		}
 		_, err = redisClient.Pipelined(context.Background(), func(pipeline redis.Pipeliner) error {
 			setCmd = pipeline.SetNX(ctx, addToPendingLock, cfg.WorkerID, addToPendingLockTTL)
@@ -88,24 +87,24 @@ func addPendingCrons() error {
 		})
 		if err != nil {
 			log.Printf("Pipeline failed: %v\n", err)
-			return err
+			continue
 		}
 
 		_, err = setCmd.Result()
 		if err != nil {
 			log.Printf("ERROR TRYING TO TAKE CHARGE OF addToPendingLock:%v\n", err)
-			return err
+			continue
 		}
 		value, err = getCmd.Result()
 		if err != nil {
 			log.Printf("ERROR TRYING TO GET addToPendingLock%v\n", err)
-			return err
+			continue
 		}
 
 		// Check if we took role of cron scheduling
 		if value != cfg.WorkerID {
 			// log.Println("Cant take role of cronmaster")
-			return nil
+			continue
 		}
 		// Get currentTime
 		end, err := redisClient.Time(ctx).Result()
@@ -120,12 +119,12 @@ func addPendingCrons() error {
 			startInt = end.Unix()
 		} else if err != nil {
 			log.Printf("Failed to get addPendingLastUnix: %v\n", err)
-			return err
+			continue
 		} else {
 			startInt, err = strconv.ParseInt(startStr, 10, 64)
 			if err != nil {
 				log.Printf("failed to parse addPendingLastUnix value: %v\n", err)
-				return err
+				continue
 			}
 		}
 		start := time.Unix(startInt, 0)
@@ -133,10 +132,9 @@ func addPendingCrons() error {
 		if end.Sub(start) > 24*time.Hour || start.After(end) {
 			start = end
 		}
-
 		userlisting, err := cronlisting.GetQueuedTasks(key)
 		if userlisting == nil || err != nil {
-			return err
+			continue
 		}
 		_, err = redisClient.Pipelined(ctx, func(pipeline redis.Pipeliner) error {
 			for _, cron := range *userlisting {
@@ -151,7 +149,7 @@ func addPendingCrons() error {
 
 					if status {
 						jb := cron.Json()
-						pipeline.LPush(ctx, "badger:pending:"+key, cron.Name+":"+string(jb))
+						pipeline.LPush(ctx, "badger:pending:"+key, string(jb))
 						break
 					}
 					t = t.Add(1 * time.Minute)
@@ -167,9 +165,7 @@ func addPendingCrons() error {
 			log.Println("ERROR SETTING addpendingLastUnix ", err)
 		}
 		// redisClient.Del(ctx, addToPendingLock).Result()
-		return nil
 	}
-	return nil
 }
 
 func ZeroOutSecondAndNanoSecond(t time.Time) time.Time {

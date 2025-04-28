@@ -211,7 +211,9 @@ func inspectQueue(w http.ResponseWriter, req *http.Request) {
 		data.Total, _ = redisClient.HLen(ctx, queueName).Result()
 	} else {
 		res, _ := redisClient.LRange(ctx, queueName, start, stop).Result()
+
 		for _, v := range res {
+
 			s := strings.Split(v, ":")
 			if len(s) > 1 {
 				id := s[0]
@@ -222,6 +224,7 @@ func inspectQueue(w http.ResponseWriter, req *http.Request) {
 				data.Jobs = append(data.Jobs, v)
 				data.JobsID = append(data.JobsID, "")
 			}
+
 		}
 		data.Total, _ = redisClient.LLen(ctx, queueName).Result()
 	}
@@ -257,5 +260,31 @@ func inspectJob(w http.ResponseWriter, req *http.Request) {
 		Logs string
 	}{}
 	data.Logs = res
+	if data.Logs == "" {
+		data.Logs = "Logging is set to false in config file"
+	}
 	tmpl.Execute(w, data)
+}
+
+func requeueOrDelete(w http.ResponseWriter, req *http.Request) {
+	var (
+		redisClient = db.Get()
+		ctx         = context.Background()
+	)
+	jobId := req.URL.Query().Get("jobid")
+	job := req.URL.Query().Get("job")
+	queueName := req.URL.Query().Get("queuename")
+	operation := req.URL.Query().Get("operation")
+	if operation == "delete" {
+		redisClient.LRem(ctx, queueName, 1, jobId+":"+job)
+	} else {
+		s := strings.Split(queueName, ":")
+		if len(s) == 3 {
+			pendingQueue := s[0] + ":pending:" + s[2]
+			redisClient.LPush(ctx, pendingQueue, job)
+		}
+	}
+
+	redirectUrl := "/inspectQueue?start=0" + "&queuename=" + queueName
+	http.Redirect(w, req, redirectUrl, http.StatusMovedPermanently)
 }

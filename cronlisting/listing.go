@@ -17,7 +17,8 @@ func GetQueuedTasks(queueName string) (*[]Cron, error) {
 		return nil, err
 	}
 	//[startserver]10,11,12,13SystemspecsUseroptions
-	userCrons := []Cron{}
+	s := []Cron{}
+	var  userCrons *[]Cron = &s
 	for cronName, cronData := range results {
 		var newCron Cron
 		// expectation min hour day/date month
@@ -28,7 +29,7 @@ func GetQueuedTasks(queueName string) (*[]Cron, error) {
 			log.Println("Error decoding cron :", err)
 			continue
 		}
-		userCrons = append(userCrons, newCron)
+		*userCrons = append(*userCrons, newCron)
 	}
-	return &userCrons, nil
+	return userCrons, nil
 }

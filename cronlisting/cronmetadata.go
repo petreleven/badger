@@ -1,7 +1,6 @@
 package cronlisting
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
@@ -26,7 +25,6 @@ type Cron struct {
 	Month   string
 	DayWeek string
 	Job     string
-	Queue   string
 }
 
 func (c *Cron) Encode() string {
@@ -34,7 +32,7 @@ func (c *Cron) Encode() string {
 }
 
 func (c *Cron) DecodeFromSlice(cronName string, cronDetails []string) error {
-	if len(cronDetails) < 5 {
+	if len(cronDetails) < 6 {
 		return fmt.Errorf("Cron details len doesnt match expected length\n")
 	}
 
@@ -44,17 +42,17 @@ func (c *Cron) DecodeFromSlice(cronName string, cronDetails []string) error {
 	c.Day = cronDetails[2]
 	c.Month = cronDetails[3]
 	c.DayWeek = cronDetails[4]
-	c.Job = "eg run bash shell"
+	c.Job = strings.Join(cronDetails[5:], " ")
 
+	/*log.Println("\n ")
+	log.Println("DETAILS ", cronDetails)
+	log.Println("c ",c )
+	log.Println("\n ")*/
 	return nil
 }
 
 func (c *Cron) Json() (data []byte) {
-	data, err := json.Marshal(c.Job)
-	if err != nil {
-		return nil
-	}
-	return data
+	return []byte(c.Job)
 }
 
 func isInRange(value string, t int) (bool, error) {

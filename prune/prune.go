@@ -50,13 +50,14 @@ func pruneCustomQueues() {
 			log.Println("Error in getting AddPendingLastUnix for queue:", key, err)
 			continue
 		}
-		startUTC, err := strconv.Atoi(start)
+		startUTC, err := strconv.ParseInt(start, 10, 64)
 		if err != nil {
 			log.Println("Error in conerting AddPendingLastUnix value to int for queue:", key, err)
 			continue
 		}
 		ctx := context.Background()
-		startunixT := time.Unix(int64(startUTC), 0).UTC()
+		startunixT := time.Unix(startUTC, 0).UTC()
+
 		redisClient.Pipelined(ctx, func(pipeline redis.Pipeliner) error {
 			for _, c := range *userqueuedJobs {
 				cronUTC, err := c.GetUTC(startunixT)

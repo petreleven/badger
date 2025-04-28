@@ -35,6 +35,7 @@ func WebStart() {
 	mux.HandleFunc("/showQueuePreview", showQueuePreview)
 	mux.HandleFunc("/inspectQueue", inspectQueue)
 	mux.HandleFunc("/inspectJob", inspectJob)
+	mux.HandleFunc("/requeueOrDelete", requeueOrDelete)
 
 	ctx, cancelCtx := context.WithCancel(context.Background())
 	defer cancelCtx()
