@@ -53,18 +53,18 @@ Here's an example of the config file:
   "ClusterName": "badger:allworkers",
   "CustomQueues": {
     "Queues": {
-      "mycustomqueue": {
-        "Concurrency": 5,
-        "Timeout": 60,
-        "DoneLog": true
+      "your-new-queue": {        // Add your queue name here
+        "Concurrency": 3,        // Number of parallel jobs
+        "Timeout": 120,          // Seconds until job is considered failed
+        "DoneLog": true          // Whether to log completed jobs
       },
-      "mailqueue": {
-        "Concurrency": 10,
+      "another-queue": {         // You can add multiple queues
+        "Concurrency": 5,
         "Timeout": 60
       }
     }
   },
-  "RedisURL": "redis://localhost:6379"
+  "RedisURL": "redis://localhost:6379"  // Update Redis URL if needed
 }
 ```
 
