@@ -64,19 +64,19 @@ The worker processes jobs as shell commands, making it versatile for various aut
 Run the worker normally:
 
 ```sh
-./worker
+./badger
 ```
 
 Or run it as a background daemon:
 
 ```sh
-./worker -d
+./badger -d
 ```
 
 ### 🛠️ CLI Options
 
 ```sh
-Usage of ./worker:
+Usage of ./badger:
   -d    Run as a daemon in the background
 ```
 
