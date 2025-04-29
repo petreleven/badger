@@ -1,4 +1,4 @@
-# badgetWorker
+# badgerWorker
 
 A cron worker implementation in Go that uses Redis for distributed job queuing and locking. This worker is ideal for environments where multiple instances need to coordinate task execution without stepping on each other's toes.
 
@@ -17,9 +17,9 @@ Inspired by [brooce](https://github.com/SergeyTsalkov/brooce).
 Clone the repository and build the binary:
 
 ```sh
-git clone https://github.com/your-repo/badgetWorker.git
-cd badgetWorker
-go build -o worker
+git clone https://github.com/your-repo/badger.git
+cd badger
+go build -o badger  badger.go
 ```
 
 ## ⚙️ Configuration
@@ -42,11 +42,7 @@ The worker is configured via a JSON file located at `/home/.badger/config.json`.
         "Concurrency": 10,
         "Timeout": 60
       },
-      "alertsqueue": {
-        "Concurrency": 1,
-        "Timeout": 120,
-        "DoneLog": true
-      }
+
     }
   },
   "RedisURL": "redis://localhost:6379"
@@ -86,7 +82,7 @@ Usage of ./worker:
 
 ## 🖥️ Web UI
 
-badgetWorker comes with a built-in web interface that runs on port 5000, accessible at `http://localhost:5000`. The Web UI provides a convenient way to:
+badger comes with a built-in web interface that runs on port 5000, accessible at `http://localhost:5000`. The Web UI provides a convenient way to:
 
 - **Monitor active jobs** - See what's currently running across all queues
 - **View job history** - Check completed, failed, and delayed jobs
@@ -94,9 +90,9 @@ badgetWorker comes with a built-in web interface that runs on port 5000, accessi
 - **Schedule new jobs** - Add jobs directly through the interface
 - **Check worker status** - View health metrics and configuration details
 
-![badgetWorker Web UI Dashboard](./ui_images/ui_home.png)
-![badgetWorker Web UI Dashboard](./ui_images/queue.png)
-![badgetWorker Web UI Dashboard](./ui_images/job_logs.png)
+![badger Web UI Dashboard](./ui_images/ui_home.png)
+![badger Web UI Dashboard](./ui_images/queue.png)
+![badger Web UI Dashboard](./ui_images/job_logs.png)
 ### Key Web UI Features
 
 - **Queue Overview**: See at-a-glance statistics for all your configured queues
