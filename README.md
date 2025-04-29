@@ -94,8 +94,9 @@ badgetWorker comes with a built-in web interface that runs on port 5000, accessi
 - **Schedule new jobs** - Add jobs directly through the interface
 - **Check worker status** - View health metrics and configuration details
 
-![badgetWorker Web UI Dashboard](https://placeholder-for-dashboard-screenshot.png)
-
+![badgetWorker Web UI Dashboard](./ui_images/ui_home.png)
+![badgetWorker Web UI Dashboard](./ui_images/queue.png)
+![badgetWorker Web UI Dashboard](./ui_images/job_logs.png)
 ### Key Web UI Features
 
 - **Queue Overview**: See at-a-glance statistics for all your configured queues

@@ -286,7 +286,11 @@
       <div class="flex justify-between items-center max-w-7xl mx-auto">
         <div class="flex items-center space-x-3">
           <div class="flex items-center justify-center h-10 w-10 rounded-full bg-surface0 border border-surface1">
-            <i data-feather="clock" class="text-mauve"></i>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-hdd-stack" viewBox="0 0 16 16">
+              <path d="M14 10a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-1a1 1 0 0 1 1-1zM2 9a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1a2 2 0 0 0-2-2z"/>
+              <path d="M5 11.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m-2 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0M14 3a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM2 2a2 2 0 0 0-2 2v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/>
+              <path d="M5 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m-2 0a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+            </svg>
           </div>
           <a class="text-2xl font-semibold text-lavender" href="/">Cron Cluster Dashboard</a>
         </div>
@@ -295,10 +299,7 @@
             <div class="w-2 h-2 rounded-full bg-green inline-block mr-2 animate-pulse"></div>
             <span>Live</span>
           </div>
-          <button class="btn btn-primary">
-          <i data-feather="refresh-cw" class="w-4 h-4 mr-2"></i>
-          Refresh Data
-          </button>
+
         </div>
       </div>
     </header>
@@ -342,14 +343,7 @@
           <i data-feather="server" class="mr-2 text-blue"></i>
           Worker Nodes
           </h2>
-          <div class="flex items-center space-x-2">
-            <div class="text-sm text-subtext0">Filter:</div>
-            <select class="bg-surface0 border border-surface1 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue">
-              <option>All Workers</option>
-              <option>Active</option>
-              <option>Idle</option>
-            </select>
-          </div>
+
         </div>
         <div class="dashboard-card table-container">
           <div class="overflow-x-auto">

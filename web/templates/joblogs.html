@@ -1,6 +1,6 @@
 <div class="container mx-auto px-4 py-6">
   <!-- Breadcrumb navigation -->
- <!--  <div class="flex items-center mb-6 text-sm">
+  <!--  <div class="flex items-center mb-6 text-sm">
     <a href="#"
       class="text-subtext0 hover:text-blue flex items-center"
       hx-get="/"
@@ -35,17 +35,51 @@
           Job Execution Logs
           </h3>
         </div>
-
       </div>
     </div>
     <div class="px-6 py-4 bg-mantle border-b border-surface1">
       <div class="flex items-center space-x-4">
         <div class="flex items-center">
           <span class="text-xs font-medium text-subtext0 mr-2">Status:</span>
-          <span class="status-pill bg-green-500  border border-green border-opacity-30">
+          <span id="status" class="status-pill  border border-green border-opacity-30">
             <span class="bg-green w-2 h-2 rounded-full mr-1"></span>
-            Completed
+            <i id="statustext">Completed</i>
           </span>
+          <script type="text/javascript">
+            document.addEventListener("htmx:afterSwap", updateStatus);
+            document.addEventListener("DOMContentLoaded", updateStatus);
+
+              function updateStatus(){
+          let params = window.location.search;
+          let urlParams = new URLSearchParams(params);
+          let queuename = urlParams.get('queuename');
+          let elementBtn = document.getElementById("status");
+          let elementStatusText = document.getElementById("status")
+          function remove(){
+              elementBtn.classList.remove("bg-green-500");
+              elementBtn.classList.remove("bg-red-500");
+              elementBtn.classList.remove("bg-yellow-500");
+              elementBtn.classList.remove("bg-surface1");
+            }
+            if (queuename.startsWith("badger:done")){
+              remove();
+              elementBtn.classList.add("bg-green-500");
+              elementStatusText.textContent = "completed";
+            }else if  (queuename.startsWith( "badger:failed")){
+              remove();
+              elementBtn.classList.add("bg-red-500")
+              elementStatusText.textContent = "failed";
+            }else if (queuename.startsWith( "badger:running")){
+              remove();
+              elementBtn.classList.add("bg-yellow-500")
+              elementStatusText.textContent = "running";
+            }else if (queuename.startsWith( "badger:delayed")){
+              remove();
+              elementBtn.classList.add("bg-surface1")
+              elementStatusText.textContent = "delayed";
+            }
+          };
+          </script>
         </div>
       </div>
     </div>

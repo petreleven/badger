@@ -25,7 +25,7 @@
           <tr class="job-item hover:bg-surface1 transition-all duration-200">
             <td class="px-6 py-4">
               <div class="flex items-center cursor-pointer"
-                hx-get="/inspectJob?logid={{index $.JobsID $i}}"
+                hx-get="/inspectJob?logid={{index $.JobsID $i}}&queuename={{$.Name}}"
                 hx-trigger="click"
                 hx-target="#main-content"
                 hx-swap="innerHTML"
