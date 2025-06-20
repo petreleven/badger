@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -35,6 +36,11 @@ func PruneStart() {
 			time.Sleep(30 * time.Second)
 		}
 	}()
+	go func() {
+		for {
+			time.Sleep(120 * time.Second)
+		}
+	}()
 }
 
 func pruneCustomQueues() {
@@ -60,12 +66,19 @@ func pruneCustomQueues() {
 
 		redisClient.Pipelined(ctx, func(pipeline redis.Pipeliner) error {
 			for _, c := range *userqueuedJobs {
+				if strings.Contains(c.Minute, "*") || strings.Contains(c.Hour, "*") ||
+					strings.Contains(c.Day, "*") || strings.Contains(c.Month, "*") ||
+					strings.Contains(c.DayWeek, "*") {
+					continue
+				}
 				cronUTC, err := c.GetUTC(startunixT)
 				if err != nil {
 					continue
 				}
+				log.Println("cronUTC:", cronUTC)
+				log.Println("startunixT:", startunixT.Unix())
 				// ready to prune
-				if cronUTC < int64(startUTC) {
+				if cronUTC < startunixT.Unix() {
 					pipeline.Pipeline().HDel(ctx, key, c.Name)
 				}
 			}

@@ -53,7 +53,7 @@ func AddPendingCronsStart() {
 	go func() {
 		for {
 			addPendingCrons()
-			time.Sleep(10 * time.Second)
+			time.Sleep(60 * time.Second)
 		}
 	}()
 	startWorkers()
@@ -92,7 +92,7 @@ func addPendingCrons() {
 
 		_, err = setCmd.Result()
 		if err != nil {
-			log.Printf("ERROR TRYING TO TAKE CHARGE OF addToPendingLock:%v\n", err)
+			log.Printf("UNABLE TO TAKE CHARGE OF addToPendingLock:%v\n", err)
 			continue
 		}
 		value, err = getCmd.Result()
@@ -101,7 +101,7 @@ func addPendingCrons() {
 			continue
 		}
 
-		// Check if we took role of cron scheduling
+		// Check if we didnt take role of cron scheduling check
 		if value != cfg.WorkerID {
 			// log.Println("Cant take role of cronmaster")
 			continue
@@ -132,6 +132,7 @@ func addPendingCrons() {
 		if end.Sub(start) > 24*time.Hour || start.After(end) {
 			start = end
 		}
+		pruneCanceledJobs(key)
 		userlisting, err := cronlisting.GetQueuedTasks(key)
 		if userlisting == nil || err != nil {
 			continue
@@ -148,8 +149,8 @@ func addPendingCrons() {
 					}
 
 					if status {
-						jb := cron.Json()
-						pipeline.LPush(ctx, "badger:pending:"+key, string(jb))
+						jb := cron.GetJob()
+						pipeline.LPush(ctx, "badger:pending:"+key, jb)
 						break
 					}
 					t = t.Add(1 * time.Minute)
@@ -164,7 +165,7 @@ func addPendingCrons() {
 		if err != nil {
 			log.Println("ERROR SETTING addpendingLastUnix ", err)
 		}
-		// redisClient.Del(ctx, addToPendingLock).Result()
+		redisClient.Del(ctx, addToPendingLock).Result()
 	}
 }
 
@@ -185,7 +186,7 @@ func IsCronReady(c *cronlisting.Cron, t time.Time) (bool, error) {
 
 func worker(queueKey string, value config.CustomQueue, workerID string) {
 	ctx := context.Background()
-	cfg := config.Get()
+	cfg = config.Get()
 
 	pendingQueue := "badger:pending:" + queueKey
 	runningHash := "badger:running:" + queueKey
@@ -305,6 +306,27 @@ func startWorkers() {
 					time.Sleep(10 * time.Second)
 				}
 			}(queueKey, queueConfig, workerID)
+		}
+	}
+}
+
+func pruneCanceledJobs(key string) {
+	ctx := context.Background()
+	log.Println("Job cancellation started for queue:", key)
+	canceledjobs, err := redisClient.LRange(ctx, key+":cancel", 0, -1).Result()
+	log.Println("Jobs to cancel: ", canceledjobs)
+	if err != nil && err != redis.Nil {
+		log.Println("Error when trying to get canceledjobs for queue ", key, " err:", err)
+		return
+	}
+	for _, cronid := range canceledjobs {
+		_, err := redisClient.HDel(ctx, key, cronid).Result()
+		if err != nil {
+			log.Println("Error to cancel job ", cronid)
+		}
+		_, err = redisClient.LRem(ctx, key+":cancel", 0, cronid).Result()
+		if err != nil && err != redis.Nil {
+			log.Println("Warning Unable to Remove canceledjob id :", cronid)
 		}
 	}
 }

@@ -17,42 +17,18 @@ const (
 )
 
 type Cron struct {
-	Name string
-
-	Minute  string
-	Hour    string
-	Day     string
-	Month   string
-	DayWeek string
-	Job     string
+	Name    string `json:"Name"`
+	Minute  string `json:"Minute"`
+	Hour    string `json:"Hour"`
+	Day     string `json:"Day"`
+	Month   string `json:"Month"`
+	DayWeek string `json:"DayWeek"`
+	Job     string `json:"Job"`
 }
 
-func (c *Cron) Encode() string {
-	return c.Minute + " " + c.Hour + " " + c.Day + " " + c.Month + " " + c.DayWeek + " " + c.Job
-}
-
-func (c *Cron) DecodeFromSlice(cronName string, cronDetails []string) error {
-	if len(cronDetails) < 6 {
-		return fmt.Errorf("Cron details len doesnt match expected length\n")
-	}
-
-	c.Name = cronName
-	c.Minute = cronDetails[0]
-	c.Hour = cronDetails[1]
-	c.Day = cronDetails[2]
-	c.Month = cronDetails[3]
-	c.DayWeek = cronDetails[4]
-	c.Job = strings.Join(cronDetails[5:], " ")
-
-	/*log.Println("\n ")
-	log.Println("DETAILS ", cronDetails)
-	log.Println("c ",c )
-	log.Println("\n ")*/
-	return nil
-}
-
-func (c *Cron) Json() (data []byte) {
-	return []byte(c.Job)
+func (c *Cron) GetJob() string {
+	job := c.Job
+	return job
 }
 
 func isInRange(value string, t int) (bool, error) {
@@ -128,12 +104,16 @@ func parseCronRepeatField(field *string, level int, t time.Time) {
 	if *field == "*" {
 		switch level {
 		case MINUTE:
+
 			*field = fmt.Sprintf("%d", t.Minute())
 		case HOUR:
+
 			*field = fmt.Sprintf("%d", t.Hour())
 		case DAY:
+
 			*field = fmt.Sprintf("%d", t.Day())
 		case MONTH:
+
 			*field = fmt.Sprintf("%d", t.Month())
 		case DAYWEEK:
 			*field = fmt.Sprintf("%d", t.Weekday())
