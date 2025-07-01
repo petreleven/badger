@@ -4,7 +4,7 @@
 
 A fast, distributed cron job runner written in Go, backed by Redis. Ideal for running and managing scheduled shell jobs across multiple machines or processes.
 
-> **Inspired by**: [brooce](https://github.com/SergeyTsalkov/brooce)
+Inspired by**: [brooce](https://github.com/SergeyTsalkov/brooce)
 
 ---
 
