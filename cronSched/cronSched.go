@@ -150,6 +150,7 @@ func addPendingCrons() {
 
 					if status {
 						jb := cron.GetJob()
+						log.Println(cron.Name, "is ready")
 						pipeline.LPush(ctx, "badger:pending:"+key, jb)
 						break
 					}
@@ -204,6 +205,7 @@ func worker(queueKey string, value config.CustomQueue, workerID string) {
 	}
 
 	// job[0] is the queue name, job[1] is the actual job
+
 	jobCmd := job[1]
 	jobID := uuid.New().String()
 
