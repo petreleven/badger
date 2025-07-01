@@ -2,6 +2,7 @@
 # 🦡 BadgerWorker
 
 A fast, distributed cron job runner written in Go, backed by Redis. Ideal for running and managing scheduled shell jobs across multiple machines or processes.
+The jobs themselves are shell commands
 
 Inspired by**: [brooce](https://github.com/SergeyTsalkov/brooce)
 
@@ -84,8 +85,11 @@ After first run, edit `/home/.badger/config.json` to:
 Badger executes shell jobs defined in Redis. Example:
 
 ```bash
-LPUSH badger:pending:mail-queue task1000
-HSET mail-queue task1000 '{"Name":"task1000", "Minute":"*", "Hour":"*", "Day":"01", "Month":"07", "DayWeek":"2", "Job":"uname"}'
+#add a job that needs immediate execution
+LPUSH badger:pending:mail-queue ls -la
+#queue a job at a particular time
+HSET mail-queue task1000 '{"Name":"task1000", "Minute":"*", "Hour":"*", "Day":"01", "Month":"07", "DayWeek":"2", "Job":"python3 main.py"}'
+HSET mail-queue task2000 '{"Name":"task1000", "Minute":"*", "Hour":"*", "Day":"01", "Month":"07", "DayWeek":"2", "Job":"python3 report.py"}'
 ```
 
 You can add more job objects the same way using different task names.
