@@ -84,6 +84,7 @@ After first run, edit `/home/.badger/config.json` to:
 ## 🔁 Adding Jobs (Manually via Redis)
 
 Badger executes shell jobs defined in Redis. Example:
+NOTE: Queued jobs should be added in unix time
 
 ```bash
 #add a job that needs immediate execution
@@ -92,6 +93,24 @@ LPUSH badger:pending:mail-queue ls -la
 HSET mail-queue task1000 '{"Name":"task1000", "Minute":"*", "Hour":"*", "Day":"01", "Month":"07", "DayWeek":"2", "Job":"python3 main.py"}'
 HSET mail-queue task2000 '{"Name":"task1000", "Minute":"*", "Hour":"*", "Day":"01", "Month":"07", "DayWeek":"2", "Job":"python3 report.py"}'
 ```
+on another shell youll see
+```bash
+> ./badger
+2025/07/01 13:09:28 0.0.0.0
+2025/07/01 13:09:28 name is  badger:46976:52e45c23-e3f3-436a-9961-3e4f40472c5a
+2025/07/01 13:09:28 Connected to Redis
+2025/07/01 13:09:28 Starting Web Server port 5000
+2025/07/01 13:09:28 HGETALL queue:0.0.0.0 yielded 1
+2025/07/01 13:09:28 Job cancellation started for queue: 0.0.0.0
+2025/07/01 13:09:28 Jobs to cancel:  []
+2025/07/01 13:09:28 HGETALL queue:0.0.0.0 yielded 1
+2025/07/01 13:09:28 task1000 is ready
+2025/07/01 13:09:28 true
+2025/07/01 13:09:28 Worker e0621f16-a72d-4b12-819d-69ee44236806:worker:3: Job completed successfully
+2025/07/01 13:09:58 HGETALL queue:0.0.0.0 yielded 1
+
+```
+
 
 You can add more job objects the same way using different task names.
 
