@@ -1,56 +1,51 @@
-Here’s a simplified and more direct version of your README. It's structured to be easier to scan and follow, especially for new users who want to get up and running quickly.
-
 ---
 
 # 🦡 BadgerWorker
 
-A distributed cron job runner in Go using Redis. Ideal for running scheduled tasks across multiple machines or processes without conflicts.
+A fast, distributed cron job runner written in Go, backed by Redis. Ideal for running and managing scheduled shell jobs across multiple machines or processes.
 
-Inspired by [brooce](https://github.com/SergeyTsalkov/brooce).
+> **Inspired by**: [brooce](https://github.com/SergeyTsalkov/brooce)
 
 ---
 
 ## ⚡ Quick Start
-## 📥 Download
 
-Grab a prebuilt binary from the [Releases](https://github.com/petreleven/badger/releases) page:
+### 📥 Download Prebuilt Binaries
 
-| Platform | Binary |
-|----------|--------|
-| Linux (x86_64) | [badger-linux](https://github.com/petreleven/badger/releases/download/v1.0.0/badger-linux) |
-| macOS (x86_64) | [badger-darwin](https://github.com/petreleven/badger/releases/download/v1.0.0/badger-darwin) |
-| Windows (x86_64) | [badger.exe](https://github.com/petreleven/badger/releases/download/v1.0.0/badger.exe) |
+Get the latest binaries from the [Releases page](https://github.com/petreleven/badger/releases):
 
-Make it executable:
+| Platform        | Download                                                                                     |
+| --------------- | -------------------------------------------------------------------------------------------- |
+| Linux (x86\_64) | [badger-linux](https://github.com/petreleven/badger/releases/download/v1.0.0/badger-linux)   |
+| macOS (x86\_64) | [badger-darwin](https://github.com/petreleven/badger/releases/download/v1.0.0/badger-darwin) |
+| Windows         | [badger.exe](https://github.com/petreleven/badger/releases/download/v1.0.0/badger.exe)       |
+
+Make it executable (Linux/macOS):
+
 ```bash
 chmod +x ./badger-linux
 ./badger
 ```
-or build from source
+
+### 🛠️ Build from Source
+
 ```bash
 git clone https://github.com/petreleven/badger.git
 cd badger
 go build -o badger badger.go
-./badger   # generates default config
-```
-
-### Edit Config
-
-Edit `/home/.badger/config.json` to:
-
-* Add your own queues
-* Set Redis connection info (default: `redis://localhost:6379`)
-
-### Run the Worker
-
-```bash
-./badger       # Run in foreground
-./badger -d    # Run as background daemon
+./badger   # generates config at /home/.badger/config.json
 ```
 
 ---
 
-## 🔧 Config Example
+## ⚙️ Configuration
+
+After first run, edit `/home/.badger/config.json` to:
+
+* Set Redis connection (default: `redis://localhost:6379`)
+* Define queues and job parameters
+
+### Example Config
 
 ```json
 {
@@ -68,32 +63,39 @@ Edit `/home/.badger/config.json` to:
 }
 ```
 
-Each queue must define:
+### Queue Fields
 
-* `Concurrency`: Max jobs in parallel
-* `Timeout`: Seconds before a job is considered failed
-* `DoneLog`: (optional) Log completed jobs
+* `Concurrency`: Max parallel jobs
+* `Timeout`: Seconds until a job is considered failed
+* `DoneLog` (optional): Log completed jobs
 
 ---
 
-## 🧠 How It Works
+## 🚀 Running the Worker
 
-* Jobs are defined as shell commands.
-* Worker pulls tasks from Redis and runs them.
-* Jobs are distributed across all active workers.
+```bash
+./badger       # Foreground mode
+./badger -d    # Background daemon
+```
 
-To add jobs manually via Redis:
+---
+
+## 🔁 Adding Jobs (Manually via Redis)
+
+Badger executes shell jobs defined in Redis. Example:
 
 ```bash
 LPUSH badger:pending:mail-queue task1000
 HSET mail-queue task1000 '{"Name":"task1000", "Minute":"*", "Hour":"*", "Day":"01", "Month":"07", "DayWeek":"2", "Job":"uname"}'
 ```
 
+You can add more job objects the same way using different task names.
+
 ---
 
-## 🤹 Multiple Workers
+## 🤹 Scale with Multiple Workers
 
-**Same Machine**
+### On the Same Machine
 
 ```bash
 ./badger
@@ -101,46 +103,46 @@ HSET mail-queue task1000 '{"Name":"task1000", "Minute":"*", "Hour":"*", "Day":"0
 ./badger -d
 ```
 
-**Across Multiple Machines**
+### On Different Machines
 
-* Use the same `ClusterName` and Redis URL in config
-* Workers will auto-distribute load
+* Ensure all workers share the same `RedisURL` and `ClusterName`.
+* Jobs will be automatically distributed across all workers.
 
 ---
 
-## 💻 Web UI
+## 💻 Web Interface
 
-Starts automatically at:
+Accessible at:
 **[http://localhost:5000](http://localhost:5000)**
 
-### Features:
+### Web UI Features
 
-* View running/completed/failed jobs
-* Monitor queue health
-* Add/schedule new jobs
-* Retry or cancel jobs
-* See logs for finished jobs
+* View active/completed/failed jobs
+* Inspect or manage queues
+* Add and schedule new jobs
+* Retry or cancel existing jobs
+* Search logs (if `DoneLog: true`)
 
-📸 UI Screenshots
-*(Place your images here)*
-`./ui_images/ui_home.png`
-`./ui_images/queue.png`
-`./ui_images/job_logs.png`
+📸 UI Screenshots:
+
+* `./ui_images/ui_home.png`
+* `./ui_images/queue.png`
+* `./ui_images/job_logs.png`
 
 ---
 
 ## 🧾 CLI Options
 
 ```bash
-./badger -d    # Run as daemon
+./badger -d      # Run in background
 ```
 
 ---
 
-## 📜 License
+## 📄 License
 
 [MIT License](LICENSE)
 
 ---
 
-Let me know if you want a separate `USAGE.md` or Docker instructions added.
+Let me know if you'd like a `Dockerfile`, systemd service example, or separate `USAGE.md` guide included!
