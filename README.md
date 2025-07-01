@@ -1,4 +1,3 @@
----
 
 # 🦡 BadgerWorker
 
@@ -6,7 +5,7 @@ A fast, distributed cron job runner written in Go, backed by Redis. Ideal for ru
 
 Inspired by**: [brooce](https://github.com/SergeyTsalkov/brooce)
 
----
+
 
 ## ⚡ Quick Start
 
