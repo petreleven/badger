@@ -11,7 +11,22 @@ Inspired by [brooce](https://github.com/SergeyTsalkov/brooce).
 ---
 
 ## ⚡ Quick Start
+## 📥 Download
 
+Grab a prebuilt binary from the [Releases](https://github.com/petreleven/badger/releases) page:
+
+| Platform | Binary |
+|----------|--------|
+| Linux (x86_64) | [badger-linux](https://github.com/petreleven/badger/releases/download/v1.0.0/badger-linux) |
+| macOS (x86_64) | [badger-darwin](https://github.com/petreleven/badger/releases/download/v1.0.0/badger-darwin) |
+| Windows (x86_64) | [badger.exe](https://github.com/petreleven/badger/releases/download/v1.0.0/badger.exe) |
+
+Make it executable:
+```bash
+chmod +x ./badger-linux
+./badger
+```
+or build from source
 ```bash
 git clone https://github.com/petreleven/badger.git
 cd badger
